@@ -75,6 +75,7 @@ Python + Django REST Framework + TokenAuthentication + JS + Docker + GitHub Acti
 |Настроить CI/CD|Очередь| --- |
 |Вшить загрузку данных в CI/CD|Очередь| --- |
 |Вшить создание админа в CI/CD|Очередь| --- |
+|Фото по дефолту|Очередь| https://www.devhandbook.com/django/user-profile/ |
 |Имя|Очередь| --- |
 
 ### Реализация
