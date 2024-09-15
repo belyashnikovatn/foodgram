@@ -114,3 +114,23 @@ class RecipeIngredient(models.Model):
 
     def __str__(self):
         return f'{self.ingredient} в {self.recipe[:SLICE_LENGTH]}'
+
+
+class Subscription(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='subscriptions')
+    subscription = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='subscribers')
+
+    class Meta:
+        verbose_name = 'подипска'
+        verbose_name_plural = 'Подписки'
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'subscription'],
+                name='unique_subscriptions'
+            )
+        ]
+
+    def __str__(self):
+        return f'{self.user} подписан(а) на {self.subscription}'

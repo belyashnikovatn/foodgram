@@ -1,10 +1,14 @@
 from django.shortcuts import render
-from rest_framework import viewsets
+from rest_framework import mixins, viewsets
 
 from api.serializers import (
-    IngredientSerializer, RecipeSerializer, TagSerializer
+    IngredientSerializer, RecipeSerializer,
+    SubscriptionSerializer, TagSerializer
 )
-from recipes.models import Ingredient, Recipe, Tag
+from recipes.models import (
+    Ingredient, Recipe,
+    Subscription, Tag
+)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -20,3 +24,13 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
+
+
+class SubscriptionViewSet(
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet
+):
+    queryset = Subscription.objects.all()
+    serializer_class = SubscriptionSerializer
