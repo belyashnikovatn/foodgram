@@ -41,7 +41,7 @@ Python + Django REST Framework + TokenAuthentication + JS + Docker + GitHub Acti
 
 ### Через docker руками:
 - $ cd infra
-- docker compose up
+- docker compose up -d --build
 
 Переменные окружения заложены в .env, используется библиотека load_dotenv. Список переменных:
 - POSTGRES_DB
