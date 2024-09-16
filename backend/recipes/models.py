@@ -54,17 +54,15 @@ class Recipe(models.Model):
         on_delete=models.CASCADE,
         related_name='recipes'
     )
-    tag = models.ManyToManyField(
+    tags = models.ManyToManyField(
         Tag,
         verbose_name='Тэг(и)',
         through='RecipeTag',
-        related_name='recipes',
     )
-    ingredient = models.ManyToManyField(
+    ingredients = models.ManyToManyField(
         Ingredient,
         verbose_name='Ингредиент(ы)',
         through='RecipeIngredient',
-        related_name='recipes'
     )
 
     class Meta:
@@ -101,6 +99,7 @@ class RecipeIngredient(models.Model):
 
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
+    amount = models.IntegerField('Количество в рецепте')
 
     class Meta:
         verbose_name = 'ингредиент в рецепте'

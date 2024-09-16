@@ -11,6 +11,12 @@ from recipes.models import (
 User = get_user_model()
 
 
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('__all__')
+
+
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
@@ -24,9 +30,17 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(),
+        many=True)
+    author = serializers.HiddenField(
+        default=serializers.CurrentUserDefault())
+
     class Meta:
         model = Recipe
-        fields = ('__all__')
+        fields = (
+            'tags', 'image',
+            'name', 'text', 'cooking_time', 'author')
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
