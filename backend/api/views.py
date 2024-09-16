@@ -13,7 +13,8 @@ from recipes.models import (
     Ingredient, Recipe,
     Subscription, Tag
 )
-from users.models import User
+
+User = get_user_model()
 
 
 class UserViewSet(djoser_views.UserViewSet):

@@ -1,11 +1,14 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 
+from django.contrib.auth import get_user_model
+
 from recipes.models import (
     Ingredient, Recipe,
     Subscription, Tag
 )
-from users.models import User
+
+User = get_user_model()
 
 
 class UserSerializer(serializers.ModelSerializer):
