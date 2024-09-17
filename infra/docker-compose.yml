@@ -8,9 +8,9 @@ services:
   backend:
     container_name: foodgram-back
     build: ../backend
-    volumes:
-      - static:/app/static/
-      - sqlite_data:/data/
+    # volumes:
+    #   - static:/app/static/
+    #   - sqlite_data:/data/
 
 
   frontend:

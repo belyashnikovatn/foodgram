@@ -1,20 +1,35 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
-
+from djoser.serializers import UserCreateSerializer, UserSerializer
 from django.contrib.auth import get_user_model
+import re
+from django.core.exceptions import ValidationError
+
 
 from recipes.models import (
-    Ingredient, Recipe,
-    Subscription, Tag
+    Ingredient,
+    Recipe,
+    Subscription,
+    Tag
 )
 
 User = get_user_model()
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserPostSerializer(UserCreateSerializer):
+
+    class Meta(UserCreateSerializer.Meta):
+        fields = ('email', 'username', 'first_name', 'last_name', 'password')
+
+    def to_representation(self, instance):
+        return UserGetSerializer(instance).data
+
+
+class UserGetSerializer(UserSerializer):
+
     class Meta:
         model = User
-        fields = ('email', 'id', 'username', 'first_name', 'last_name', 'avatar')
+        fields = ('email', 'id', 'username', 'first_name', 'last_name')
 
 
 class TagSerializer(serializers.ModelSerializer):
