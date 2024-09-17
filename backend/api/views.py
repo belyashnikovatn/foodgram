@@ -1,13 +1,13 @@
 from django.shortcuts import render
 from django.contrib.auth import get_user_model
 
-from djoser import views as djoser_views
+from djoser.views import UserViewSet as UVS
 from rest_framework import mixins, viewsets
 
 from api.serializers import (
     IngredientSerializer, RecipeSerializer,
     SubscriptionSerializer, TagSerializer,
-    UserSerializer
+    UserPostSerializer, UserGetSerializer
 )
 from recipes.models import (
     Ingredient, Recipe,
@@ -17,9 +17,13 @@ from recipes.models import (
 User = get_user_model()
 
 
-class UserViewSet(djoser_views.UserViewSet):
-    query_set = User.objects.all()
-    serializer_class = UserSerializer
+class UserViewSet(UVS):
+    queryset = User.objects.all()
+
+    def get_serializer_class(self):
+        if self.action in ('list', 'retrieve'):
+            return UserGetSerializer
+        return UserPostSerializer
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):

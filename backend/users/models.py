@@ -1,5 +1,7 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import RegexValidator
 from django.db import models
+from foodgram.constants import USERNAME_REGEX
 
 
 class User(AbstractUser):
@@ -14,7 +16,11 @@ class User(AbstractUser):
     username = models.CharField(
         'Имя пользователя',
         unique=True,
-        max_length=150
+        max_length=150,
+        validators=[RegexValidator(
+            regex=USERNAME_REGEX,
+            message='Unacceptable symbol'
+        )]
     )
     first_name = models.CharField(
         'Имя',
