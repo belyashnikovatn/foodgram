@@ -2,12 +2,18 @@ from django.shortcuts import render
 from django.contrib.auth import get_user_model
 
 from djoser.views import UserViewSet as UVS
-from rest_framework import mixins, viewsets
+from rest_framework import mixins, viewsets, status
+from rest_framework.decorators import action
+from rest_framework.permissions import (AllowAny, IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
+from rest_framework.response import Response
 
 from api.serializers import (
     IngredientSerializer, RecipeSerializer,
-    SubscriptionSerializer, TagSerializer,
-    UserPostSerializer, UserGetSerializer
+    SetPasswordSerializer,
+    SubscriptionSerializer,
+    TagSerializer,
+    UserPostSerializer, UserGetSerializer,
 )
 from recipes.models import (
     Ingredient, Recipe,
@@ -19,11 +25,24 @@ User = get_user_model()
 
 class UserViewSet(UVS):
     queryset = User.objects.all()
+    serializer_class = UserGetSerializer
 
-    def get_serializer_class(self):
-        if self.action in ('list', 'retrieve'):
-            return UserGetSerializer
-        return UserPostSerializer
+    # @action(detail=True, methods=['post'])
+    # def set_password(self, request, pk=None):
+    #     user = self.get_object()
+    #     serializer = SetPasswordSerializer(data=request.data)
+    #     if serializer.is_valid():
+    #         user.set_password(serializer.validated_data['password'])
+    #         user.save()
+    #         return Response({'status': 'password set'})
+    #     else:
+    #         return Response(serializer.errors,
+    #                         status=status.HTTP_400_BAD_REQUEST)
+
+    @action(detail=False, methods=('get',), permission_classes=(IsAuthenticated,))
+    def me(self, request):
+        serializer = self.get_serializer(request.user)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
