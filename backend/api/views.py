@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from django.contrib.auth import get_user_model
+from rest_framework.pagination import LimitOffsetPagination
 
 from djoser.views import UserViewSet as UVS
 from rest_framework import mixins, viewsets, status
@@ -25,7 +26,9 @@ User = get_user_model()
 
 class UserViewSet(UVS):
     queryset = User.objects.all()
-    serializer_class = UserGetSerializer
+    # serializer_class = UserGetSerializer
+    pagination_class = LimitOffsetPagination
+    
 
     # @action(detail=True, methods=['post'])
     # def set_password(self, request, pk=None):
@@ -41,7 +44,7 @@ class UserViewSet(UVS):
 
     @action(detail=False, methods=('get',), permission_classes=(IsAuthenticated,))
     def me(self, request):
-        serializer = self.get_serializer(request.user)
+        serializer = UserGetSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
