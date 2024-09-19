@@ -58,18 +58,15 @@ class UserViewSet(UVS, viewsets.ViewSet):
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        # return Response({'message': f'this is {request.data["user"]} and {request.data["subscription"]}.'})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-
-    # @subscribe.mapping.get
-    # def get_subs(self, request, id=None):
-    #     return Response({'message': f'That would be simple get  {id}.'})
 
     @subscribe.mapping.delete
     def delete_subs(self, request, id=None):
-        return Response({'message': f'That would be unscribe for {id}.'})
+        user = get_object_or_404(User, pk=request.user.id)
+        subscription = get_object_or_404(User, pk=id)
+        subscribe = Subscription.objects.filter(user=user, subscription=subscription)
+        subscribe.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 # if request.method == 'POST':
 #         serializer = CatSerializer(data=request.data, many=True)
