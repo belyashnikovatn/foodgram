@@ -9,14 +9,14 @@ from api.views import (
 )
 
 v1_router = routers.DefaultRouter()
-v1_router.register('users', UserViewSet)
-v1_router.register('tags', TagViewSet)
-v1_router.register('ingredients', IngredientViewSet)
-v1_router.register('recipes', RecipeViewSet)
+v1_router.register(r'users', UserViewSet, basename='users')
+v1_router.register(r'tags', TagViewSet)
+v1_router.register(r'ingredients', IngredientViewSet)
+v1_router.register(r'recipes', RecipeViewSet)
 
 
 urlpatterns = [
-    path('', include(v1_router.urls)),
-    path('auth/', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
+    path('', include(v1_router.urls)),
+    # path('auth/', include('djoser.urls')),
 ]
