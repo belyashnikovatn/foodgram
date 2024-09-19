@@ -15,9 +15,8 @@ from rest_framework.permissions import (AllowAny, IsAuthenticated,
 
 from api.serializers import (
     IngredientSerializer, RecipeSerializer,
-    SetPasswordSerializer,
-    SubscriptionSerializer,
     TagSerializer,
+    SubscriptionSerializer,
     UserPostSerializer, UserGetSerializer,
 )
 from recipes.models import (
@@ -38,24 +37,31 @@ class UserViewSet(UVS, viewsets.ViewSet):
         serializer = UserGetSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    # @action(detail=True, methods=('get', 'post',))
-    # def subscribe(self, request, id=None):
-    #     if request.method == 'POST':
-    #         return Response({'message': f'Custom POST action executed for instance {id}.'})
-    #     elif request.method == 'GET':
-    #         return Response({'message': f'You pick GET for {id}'})
-
     @action(detail=True)
     def subscribe(self, request, id=None):
         """"""
-        users = User.objects.all()
-        serializer = self.get_serializer(users, many=True)
-        return Response(serializer.data)
+
+    # @subscribe.mapping.post
+    # def create_subs(self, request, id=None):
+    #     user = request.user
+    #     cooker = User.objects.get(pk=id)
+    #     # return Response({'message': 'Получены данные', 'data': request.data})
+    #     # return Response({'message': f'Custom POST action executed for instance {user} wnats {cooker}.'})
+    #     return Response({'message': f'{user} wnats {cooker}.'})
 
     @subscribe.mapping.post
     def create_subs(self, request, id=None):
-        # return Response({'message': 'Получены данные', 'data': request.data})
-        return Response({'message': f'Custom POST action executed for instance {request.user} wnats {id}.'})
+        """"""
+        request.data['user'] = get_object_or_404(User, pk=request.user.id)
+        request.data['subscription'] = get_object_or_404(User, pk=id)
+        serializer = SubscriptionSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # return Response({'message': f'this is {request.data["user"]} and {request.data["subscription"]}.'})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 
     # @subscribe.mapping.get
     # def get_subs(self, request, id=None):
