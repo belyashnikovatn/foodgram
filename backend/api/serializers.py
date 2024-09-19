@@ -2,6 +2,7 @@ import base64
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from djoser.serializers import UserCreateSerializer, UserSerializer
+from django.shortcuts import get_object_or_404
 
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
@@ -72,11 +73,6 @@ class UserGetSerializer(UserSerializer):
             user=user, subscription=obj).exists()
 
 
-class SetPasswordSerializer(serializers.Serializer):
-    new_password = serializers.CharField(required=True, write_only=True)
-    current_password = serializers.CharField(required=True, write_only=True)
-
-
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
@@ -105,16 +101,19 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
-    subscriptions = serializers.SlugRelatedField(
+    subscription = serializers.SlugRelatedField(
         slug_field='username',
         queryset=User.objects.all()
     )
-    users = serializers.SlugRelatedField(
+    user = serializers.SlugRelatedField(
         slug_field='username',
-        read_only=True,
-        default=serializers.CurrentUserDefault())
+        queryset=User.objects.all()
+    )
+        # read_only=True,
+        # default=serializers.CurrentUserDefault())
 
     class Meta:
+        """"""
         model = Subscription
         fields = ('user', 'subscription')
         validators = [
@@ -126,5 +125,10 @@ class SubscriptionSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if data['subscription'] == self.context['request'].user:
-            raise serializers.ValidationError
+            raise serializers.ValidationError('You caonnot subscribe yourself')
         return data
+
+    # def create(self, validated_data):
+    #     user = self.context['request'].user
+    #     subscription = get_object_or_404(User, pk=validated_data['id'])
+    #     return Subscription.objects.create(user=user, subscription=subscription)
