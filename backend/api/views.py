@@ -37,7 +37,7 @@ class UserViewSet(UVS, viewsets.ViewSet):
         serializer = UserGetSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(detail=True)
+    @action(detail=True, permission_classes=(IsAuthenticated,))
     def subscribe(self, request, id=None):
         """"""
 
