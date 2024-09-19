@@ -38,13 +38,43 @@ class UserViewSet(UVS, viewsets.ViewSet):
         serializer = UserGetSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(detail=True, methods=('get', 'post',))
-    def subscribe(self, request, id=None):
-        if request.method == 'POST':
-            return Response({'message': 'You pick post subscribe'})
-        elif request.method == 'GET':
-            return Response({'message': 'You pick GET'})
+    # @action(detail=True, methods=('get', 'post',))
+    # def subscribe(self, request, id=None):
+    #     if request.method == 'POST':
+    #         return Response({'message': f'Custom POST action executed for instance {id}.'})
+    #     elif request.method == 'GET':
+    #         return Response({'message': f'You pick GET for {id}'})
 
+    @action(detail=True)
+    def subscribe(self, request, id=None):
+        """"""
+        users = User.objects.all()
+        serializer = self.get_serializer(users, many=True)
+        return Response(serializer.data)
+
+    @subscribe.mapping.post
+    def create_subs(self, request, id=None):
+        # return Response({'message': 'Получены данные', 'data': request.data})
+        return Response({'message': f'Custom POST action executed for instance {request.user} wnats {id}.'})
+
+    # @subscribe.mapping.get
+    # def get_subs(self, request, id=None):
+    #     return Response({'message': f'That would be simple get  {id}.'})
+
+    @subscribe.mapping.delete
+    def delete_subs(self, request, id=None):
+        return Response({'message': f'That would be unscribe for {id}.'})
+
+# if request.method == 'POST':
+#         serializer = CatSerializer(data=request.data, many=True)
+#         if serializer.is_valid():
+#             serializer.save()
+#             return Response(serializer.data, status=status.HTTP_201_CREATED)
+#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+#     # В случае GET-запроса возвращаем список всех котиков
+#     cats = Cat.objects.all()
+#     serializer = CatSerializer(cats, many=True)
+#     return Response(serializer.data) 
 
     # @action(detail=True, permission_classes=(IsAuthenticated,))
     # def subscribe(self, request):
@@ -88,11 +118,11 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
     permission_classes = (AllowAny,)
 
-    @action(detail=False, url_path='branch')
-    def branch(self, request):
-        tags = Tag.objects.filter(name='завтрак')
-        serializer = self.get_serializer(tags, many=True)
-        return Response(serializer.data)
+    # @action(detail=False, url_path='branch')
+    # def branch(self, request):
+    #     tags = Tag.objects.filter(name='завтрак')
+    #     serializer = self.get_serializer(tags, many=True)
+    #     return Response(serializer.data)
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
@@ -107,22 +137,3 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-
-
-class SubscriptionViewSet(
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet
-):
-    queryset = Subscription.objects.all()
-    serializer_class = SubscriptionSerializer
-    permission_classes = (IsAuthenticated,)
-    pagination_class = LimitOffsetPagination
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
-    def get_queryset(self):
-        user = self.request.user
-        return user.subscriptions.all()
