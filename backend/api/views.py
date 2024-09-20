@@ -40,7 +40,7 @@ class UserViewSet(UVS, viewsets.ViewSet):
 
     @action(detail=False, url_path=r'me/avatar')
     def avatar(self, request):
-        """Удалить аватар текущего пользователя."""
+        """Action для аватара."""
         return Response({'message': f'That action MAIN for {request.user}.'})
 
     @avatar.mapping.patch
