@@ -14,7 +14,6 @@ from rest_framework.permissions import (AllowAny, IsAuthenticated,
 
 from api.serializers import (
     IngredientSerializer,
-    RecipeSerializer,
     SubscriptionSerializer,
     TagSerializer,
     UserGetSerializer,
@@ -107,20 +106,46 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    serializer_class = RecipeSerializer
+    # serializer_class = RecipeSerializer
 
-    @action(detail=True,)
-    def favorite(self, request, id=None):
+    @action(detail=True, permission_classes=(IsAuthenticated,))
+    def favorite(self, request, pk):
         """Action для избранного рецепта."""
-        
         return Response({'message': f'That MAIN recipe action for {self}.'})
 
     @favorite.mapping.post
-    def add_into_fav(self, request, id=None):
+    def add_into_fav(self, request, pk):
         """Добавить рецепт в избранное."""
-        return Response({'message': f'Add recipe {self} into favs.'})
+        return Response({'message': f'Add recipe into {pk} favs.'})
 
     @favorite.mapping.delete
-    def del_from_fav(self, request, id=None):
+    def del_from_fav(self, request, pk):
         """Удалить рецепт из избранного."""
-        return Response({'message': f'Del recipe {self} from favs.'})
+        return Response({'message': f'Del recipe from {pk} favs.'})
+
+    @action(detail=True, permission_classes=(IsAuthenticated,), url_path='get-link')
+    def get_link(self, request, pk):
+        """Получить короткую ссылку на рецепт."""
+        return Response({'message': f'Get your link to {pk} res.'})
+
+    """Вот это место точно можно улушчить, но это потом"""
+
+    @action(detail=True, permission_classes=(IsAuthenticated,))
+    def shopping_cart(self, request, pk):
+        """Action для списка покупок."""
+        return Response({'message': f'That MAIN shopping_cart action for {self}.'})
+
+    @shopping_cart.mapping.post
+    def add_into_cart(self, request, pk):
+        """Добавить рецепт в избранное."""
+        return Response({'message': f'Add recipe into {pk} shopping_cart.'})
+
+    @shopping_cart.mapping.delete
+    def del_from_cart(self, request, pk):
+        """Удалить рецепт из избранного."""
+        return Response({'message': f'Del recipe from {pk} shopping_cart.'})
+
+    @action(detail=False, permission_classes=(IsAuthenticated,))
+    def download_shopping_cart(self, request):
+        """Скачать список покупок."""
+        return Response({'message': 'download_shopping_cart.'})
