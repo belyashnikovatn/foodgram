@@ -70,7 +70,7 @@ class UserGetSerializer(UserSerializer):
         if user.is_anonymous:
             return False
         return Subscription.objects.filter(
-            user=user, subscription=obj).exists()
+            user=user, cooker=obj).exists()
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -101,7 +101,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 
 class SubscriptionSerializer(serializers.ModelSerializer):
-    subscription = serializers.SlugRelatedField(
+    cooker = serializers.SlugRelatedField(
         slug_field='username',
         queryset=User.objects.all()
     )
@@ -109,26 +109,19 @@ class SubscriptionSerializer(serializers.ModelSerializer):
         slug_field='username',
         queryset=User.objects.all()
     )
-        # read_only=True,
-        # default=serializers.CurrentUserDefault())
 
     class Meta:
         """"""
         model = Subscription
-        fields = ('user', 'subscription')
+        fields = ('user', 'cooker')
         validators = [
             UniqueTogetherValidator(
                 queryset=Subscription.objects.all(),
-                fields=('user', 'subscription')
+                fields=('user', 'cooker')
             )
         ]
 
     def validate(self, data):
-        if data['subscription'] == self.context['request'].user:
-            raise serializers.ValidationError('You caonnot subscribe yourself')
+        if data['cooker'] == self.context['request'].user:
+            raise serializers.ValidationError('You cannot subscribe yourself')
         return data
-
-    # def create(self, validated_data):
-    #     user = self.context['request'].user
-    #     subscription = get_object_or_404(User, pk=validated_data['id'])
-    #     return Subscription.objects.create(user=user, subscription=subscription)

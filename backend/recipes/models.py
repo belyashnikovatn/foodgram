@@ -117,19 +117,19 @@ class RecipeIngredient(models.Model):
 
 class Subscription(models.Model):
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='subscriptions')
-    subscription = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='subscribers')
+        User, on_delete=models.CASCADE, related_name='following')
+    cooker = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='followers')
 
     class Meta:
         verbose_name = 'подипска'
         verbose_name_plural = 'Подписки'
         constraints = [
             models.UniqueConstraint(
-                fields=['user', 'subscription'],
+                fields=['user', 'cooker'],
                 name='unique_subscriptions'
             )
         ]
 
     def __str__(self):
-        return f'{self.user} подписан(а) на {self.subscription}'
+        return f'{self.user} подписан(а) на {self.cooker}'
