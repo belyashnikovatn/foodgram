@@ -107,6 +107,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=True,)
     def favorite(self, request, id=None):
         """Action для избранного рецепта."""
+        
         return Response({'message': f'That MAIN recipe action for {self}.'})
 
     @favorite.mapping.post
@@ -118,4 +119,3 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def del_from_fav(self, request, id=None):
         """Удалить рецепт из избранного."""
         return Response({'message': f'Del recipe {self} from favs.'})
-
