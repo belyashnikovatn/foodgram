@@ -34,27 +34,39 @@ class UserViewSet(UVS, viewsets.ViewSet):
     @action(detail=False, methods=('get',),
             permission_classes=(IsAuthenticated,))
     def me(self, request):
+        """Показывает профиль текущего пользователя."""
         serializer = UserGetSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+    @me.mapping.patch
+    def set_avatar(self, request):
+        """Добавить аватар текущего пользователя."""
+        return Response({'message': f'That action set avatar for {self}.'})
+
+    @me.mapping.delete
+    def delete_avatar(self, request):
+        """Удалить аватар текущего пользователя."""
+        return Response({'message': f'That action delete avatar for {self}.'})
+
+    @action(detail=False, permission_classes=(IsAuthenticated,))
+    def subscriptions(self, request):
+        """Список подписок."""
+        user = get_object_or_404(User, pk=request.user.id)
+        subscriptions = user.following.all()
+        serializer = SubscriptionSerializer(subscriptions, many=True)
+        return Response(serializer.data)
+
     @action(detail=True, permission_classes=(IsAuthenticated,))
     def subscribe(self, request, id=None):
-        """"""
-
-    # @subscribe.mapping.post
-    # def create_subs(self, request, id=None):
-    #     user = request.user
-    #     cooker = User.objects.get(pk=id)
-    #     # return Response({'message': 'Получены данные', 'data': request.data})
-    #     # return Response({'message': f'Custom POST action executed for instance {user} wnats {cooker}.'})
-    #     return Response({'message': f'{user} wnats {cooker}.'})
+        """Action для подписки/отписки."""
 
     @subscribe.mapping.post
     def create_subs(self, request, id=None):
-        """"""
+        """Подписаться на пользователя."""
         request.data['user'] = get_object_or_404(User, pk=request.user.id)
-        request.data['subscription'] = get_object_or_404(User, pk=id)
-        serializer = SubscriptionSerializer(data=request.data, context={'request': request})
+        request.data['cooker'] = get_object_or_404(User, pk=id)
+        serializer = SubscriptionSerializer(data=request.data,
+                                            context={'request': request})
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -62,57 +74,12 @@ class UserViewSet(UVS, viewsets.ViewSet):
 
     @subscribe.mapping.delete
     def delete_subs(self, request, id=None):
+        """Отписаться от пользователя."""
         user = get_object_or_404(User, pk=request.user.id)
-        subscription = get_object_or_404(User, pk=id)
-        subscribe = Subscription.objects.filter(user=user, subscription=subscription)
-        subscribe.delete()
+        cooker = get_object_or_404(User, pk=id)
+        subscription = Subscription.objects.filter(user=user, cooker=cooker)
+        subscription.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-# if request.method == 'POST':
-#         serializer = CatSerializer(data=request.data, many=True)
-#         if serializer.is_valid():
-#             serializer.save()
-#             return Response(serializer.data, status=status.HTTP_201_CREATED)
-#         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-#     # В случае GET-запроса возвращаем список всех котиков
-#     cats = Cat.objects.all()
-#     serializer = CatSerializer(cats, many=True)
-#     return Response(serializer.data) 
-
-    # @action(detail=True, permission_classes=(IsAuthenticated,))
-    # def subscribe(self, request):
-    #     """"""
-
-    # @subscribe.mapping.post
-    # def create_subscribe(self, request, pk):
-    #     serializer = self.get_serializer(
-    #         data=request.data,
-    #         context={'request': request, 'id': pk}
-    #         )
-    #     serializer.is_valid(raise_exception=True)
-    #     response_data = serializer.save(id=pk)
-    #     return Response(
-    #         {'message': 'Подписка успешно создана',
-    #             'data': response_data},
-    #         status=status.HTTP_201_CREATED
-    #     )
-
-    # @subscribe.mapping.delete
-    # def delete_subscribe(self, request, id):
-    #     return self._delete_relation(Q(subscription__id=id))
-
-
-
-    # @me.mapping.avatar
-    # def avatar(self, request):
-    #     serializer = UserPostSerializer(
-    #         instance=request.user,
-    #         data=request.data,
-    #         partial=True
-    #     )
-    #     serializer.is_valid(raise_exception=True)
-    #     serializer.save(role=request.user.role)
-    #     return Response(serializer.data)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
