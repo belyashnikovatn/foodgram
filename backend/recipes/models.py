@@ -47,7 +47,7 @@ class Recipe(models.Model):
         'Время приготовления (в минутах)',
         validators=(real_time,),
     )
-    image = models.ImageField(upload_to='media/recipes')
+    image = models.ImageField(upload_to='recipes')
     author = models.ForeignKey(
         User,
         verbose_name='Автор рецепта',
@@ -58,6 +58,7 @@ class Recipe(models.Model):
         Tag,
         verbose_name='Тэг(и)',
         through='RecipeTag',
+        # related_name='tags'
     )
     ingredients = models.ManyToManyField(
         Ingredient,
@@ -90,8 +91,8 @@ class RecipeTag(models.Model):
             )
         ]
 
-    def __str__(self):
-        return f'На {self.tag} подойдёт {self.recipe[:SLICE_LENGTH]}'
+    # def __str__(self):
+    #     return f'На {self.tag} подойдёт {self.recipe[:SLICE_LENGTH]}'
 
 
 class RecipeIngredient(models.Model):
@@ -111,8 +112,8 @@ class RecipeIngredient(models.Model):
             )
         ]
 
-    def __str__(self):
-        return f'{self.ingredient} в {self.recipe[:SLICE_LENGTH]}'
+    # def __str__(self):
+    #     return f'{self.ingredient} в {self.recipe[:SLICE_LENGTH]}'
 
 
 class Subscription(models.Model):

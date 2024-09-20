@@ -3,7 +3,6 @@ from django.contrib.auth import get_user_model
 from rest_framework.pagination import LimitOffsetPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
-from django.db.models import Q, QuerySet
 
 
 from djoser.views import UserViewSet as UVS
@@ -14,14 +13,17 @@ from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 
 from api.serializers import (
-    IngredientSerializer, RecipeSerializer,
-    TagSerializer,
+    IngredientSerializer,
+    RecipeSerializer,
     SubscriptionSerializer,
-    UserPostSerializer, UserGetSerializer,
+    TagSerializer,
+    UserGetSerializer,
 )
 from recipes.models import (
-    Ingredient, Recipe,
-    Subscription, Tag
+    Ingredient,
+    Recipe,
+    Subscription,
+    Tag
 )
 
 User = get_user_model()
@@ -88,12 +90,6 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
     permission_classes = (AllowAny,)
 
-    # @action(detail=False, url_path='branch')
-    # def branch(self, request):
-    #     tags = Tag.objects.filter(name='завтрак')
-    #     serializer = self.get_serializer(tags, many=True)
-    #     return Response(serializer.data)
-
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Ingredient.objects.all()
@@ -107,3 +103,19 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
+
+    @action(detail=True,)
+    def favorite(self, request, id=None):
+        """Action для избранного рецепта."""
+        return Response({'message': f'That MAIN recipe action for {self}.'})
+
+    @favorite.mapping.post
+    def add_into_fav(self, request, id=None):
+        """Добавить рецепт в избранное."""
+        return Response({'message': f'Add recipe {self} into favs.'})
+
+    @favorite.mapping.delete
+    def del_from_fav(self, request, id=None):
+        """Удалить рецепт из избранного."""
+        return Response({'message': f'Del recipe {self} from favs.'})
+
