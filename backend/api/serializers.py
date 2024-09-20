@@ -89,6 +89,9 @@ class RecipeSerializer(serializers.ModelSerializer):
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(),
         many=True)
+    ingredients = serializers.PrimaryKeyRelatedField(
+        queryset=Ingredient.objects.all(),
+        many=True)
     author = serializers.HiddenField(
         default=serializers.CurrentUserDefault())
     image = Base64ImageField(required=True, allow_null=False)
@@ -96,7 +99,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = (
-            'tags', 'image',
+            'tags', 'image', 'ingredients',
             'name', 'text', 'cooking_time', 'author')
 
 

@@ -23,6 +23,16 @@ class DisplayModelAdmin(admin.ModelAdmin):
         super().__init__(model, admin_site)
 
 
+@admin.register(User)
+class UserAdmin(DisplayModelAdmin):
+    """Admin users."""
+
+
+@admin.register(Subscription)
+class SubscriptionAdmin(DisplayModelAdmin):
+    """Admin subscriptions."""
+
+
 @admin.register(Tag)
 class TagAdmin(DisplayModelAdmin):
     """Admin tags."""
@@ -33,16 +43,18 @@ class IngredientAdmin(DisplayModelAdmin):
     """Admin ingredients."""
 
 
+class TagInline(admin.TabularInline):
+    model = Recipe.tags.through
+
+
+class IngredientInline(admin.TabularInline):
+    model = Recipe.ingredients.through
+
+
 @admin.register(Recipe)
-class RecipeAdmin(DisplayModelAdmin):
+class RecipeAdmin(admin.ModelAdmin):
     """Admin recipes."""
-
-
-@admin.register(User)
-class UserAdmin(DisplayModelAdmin):
-    """Admin users."""
-
-
-@admin.register(Subscription)
-class SubscriptionAdmin(DisplayModelAdmin):
-    """Admin subscriptions."""
+    inlines = [
+        TagInline,
+        IngredientInline,
+    ]
