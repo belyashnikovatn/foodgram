@@ -34,19 +34,24 @@ class UserViewSet(UVS, viewsets.ViewSet):
     @action(detail=False, methods=('get',),
             permission_classes=(IsAuthenticated,))
     def me(self, request):
-        """Показывает профиль текущего пользователя."""
+        """Показать профиль текущего пользователя."""
         serializer = UserGetSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @me.mapping.patch
+    @action(detail=False, url_path=r'me/avatar')
+    def avatar(self, request):
+        """Удалить аватар текущего пользователя."""
+        return Response({'message': f'That action MAIN for {request.user}.'})
+
+    @avatar.mapping.patch
     def set_avatar(self, request):
         """Добавить аватар текущего пользователя."""
-        return Response({'message': f'That action set avatar for {self}.'})
+        return Response({'message': f'That action set avatar for {request.user}.'})
 
-    @me.mapping.delete
+    @avatar.mapping.delete
     def delete_avatar(self, request):
         """Удалить аватар текущего пользователя."""
-        return Response({'message': f'That action delete avatar for {self}.'})
+        return Response({'message': f'That action delete avatar for {request.user}.'})
 
     @action(detail=False, permission_classes=(IsAuthenticated,))
     def subscriptions(self, request):
