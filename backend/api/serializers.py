@@ -176,10 +176,7 @@ class RecipePostSerializer(serializers.ModelSerializer):
         recipe = instance
         old_tags = recipe.tags.all()
         new_tags = validated_data.pop('tags')
-        # print(f'This is delete - {set(old_tags) - set(new_tags)}')
-        # print(f'This is gonna add - {set(new_tags) - set(old_tags)}')
         to_del = set(old_tags) - set(new_tags)
-        # RecipeTag.objects.filter(recipe_id=recipe.id, tag_id__in=to_del).delete()
         RecipeTag.objects.filter(recipe=recipe, tag__in=to_del).delete()
         to_add = set(new_tags) - set(old_tags)
         RecipeTag.objects.bulk_create([
@@ -187,25 +184,29 @@ class RecipePostSerializer(serializers.ModelSerializer):
         ])
         # print(type(to_del), to_del)
         print('00000000000000000000')
-        old_ingredients = recipe.ingredients.all()
-        new_ingredients = validated_data.pop('ingredients')
         # to_del = set(old_ingredients) - set(new_ingredients)
-        print(old_ingredients)
         # to_add = set(new_ingredients) - set(old_ingredients)
-        print(new_ingredients)
-        # for item in RecipeIngredient.objects.filter(recipe_id=recipe.id):
-            # print(item.amount)
-            # print(item.ingredient_id)
-        # print(RecipeIngredient.objects.filter(recipe_id=recipe.id).)
 
-        # for tag in tags:
-        #     RecipeTag.objects.get_or_create(**tags)
-        #     # RecipeTag.objects.create(tag=tag, recipe=recipe)
-        # for ingredient in ingredients:
-        #     product = dict(ingredient)['id']
-        #     amount = dict(ingredient)['amount']
-        #     RecipeIngredient.objects.create(recipe=recipe, ingredient=product, amount=amount)
-        # return recipe
+        old_ingredients = RecipeIngredient.objects.filter(recipe=recipe)
+        old_ingredients_products = [RecipeIngredient.ingredient_id for RecipeIngredient in old_ingredients]
+        # print(old_ingredients_products)
+        new_ingredients = validated_data.pop('ingredients')
+        new_ingredients_ids = [dict(item)['id'].id for item in new_ingredients]
+
+        # Удаляем те ингредиенты, которых нет в новых данных.
+        for item in old_ingredients:
+            if item.ingredient.id not in new_ingredients_ids:
+                print(f'this is gona del {item.ingredient}')
+                RecipeIngredient.objects.filter(ingredient=item.ingredient).delete()
+        # Добавляем те ингредиенты, которых нет в рецепте.
+        # Обновляем количество тех, которые есть в рецепте.
+        for item in new_ingredients:
+            product, amount = dict(item)['id'], dict(item)['amount']
+            if product.id not in old_ingredients_products:
+                RecipeIngredient.objects.create(recipe=recipe, ingredient=product, amount=amount)
+            else:
+                RecipeIngredient.objects.filter(recipe=recipe, ingredient=product).update(amount=amount)
+        return recipe
 
     def to_representation(self, instance):
         return RecipeGetSerializer(instance).data
