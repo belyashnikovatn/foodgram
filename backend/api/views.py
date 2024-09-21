@@ -14,6 +14,7 @@ from rest_framework.permissions import (AllowAny, IsAuthenticated,
 
 from api.serializers import (
     IngredientSerializer,
+    RecipeSerializer,
     SubscriptionSerializer,
     TagSerializer,
     UserGetSerializer,
@@ -106,7 +107,8 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    # serializer_class = RecipeSerializer
+    serializer_class = RecipeSerializer
+    permission_classes = (AllowAny,)
 
     @action(detail=True, permission_classes=(IsAuthenticated,))
     def favorite(self, request, pk):
