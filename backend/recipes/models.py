@@ -58,12 +58,13 @@ class Recipe(models.Model):
         Tag,
         verbose_name='Тэг(и)',
         through='RecipeTag',
-        # related_name='tags'
+        related_name='tags'
     )
     ingredients = models.ManyToManyField(
         Ingredient,
         verbose_name='Ингредиент(ы)',
         through='RecipeIngredient',
+        related_name='ingredients'
     )
 
     class Meta:
@@ -92,7 +93,7 @@ class RecipeTag(models.Model):
         ]
 
     # def __str__(self):
-    #     return f'На {self.tag} подойдёт {self.recipe[:SLICE_LENGTH]}'
+        # return f'На {self.tag} подойдёт {self.recipe[:SLICE_LENGTH]}'
 
 
 class RecipeIngredient(models.Model):
@@ -113,7 +114,7 @@ class RecipeIngredient(models.Model):
         ]
 
     # def __str__(self):
-    #     return f'{self.ingredient} в {self.recipe[:SLICE_LENGTH]}'
+        # return f'{self.ingredient} в {self.recipe[:SLICE_LENGTH]}'
 
 
 class Subscription(models.Model):
