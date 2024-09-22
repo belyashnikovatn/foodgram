@@ -3,7 +3,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.pagination import LimitOffsetPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
-
+from api.permissions import OwnerOnly
 
 from djoser.views import UserViewSet as UVS
 from rest_framework import mixins, viewsets, status
@@ -26,6 +26,7 @@ from recipes.models import (
     Subscription,
     Tag
 )
+from api.filters import IngredientFilter, RecipeFilter
 
 User = get_user_model()
 
@@ -103,12 +104,16 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
     permission_classes = (AllowAny,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('name',)
+    # filterset_fields = ('name',)
+    filterset_class = IngredientFilter
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticatedOrReadOnly, OwnerOnly)
+    pagination_class = LimitOffsetPagination
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = RecipeFilter
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -132,7 +137,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """Удалить рецепт из избранного."""
         return Response({'message': f'Del recipe from {pk} favs.'})
 
-    @action(detail=True, permission_classes=(IsAuthenticated,), url_path='get-link')
+    @action(detail=True, permission_classes=(AllowAny,), url_path='get-link')
     def get_link(self, request, pk):
         """Получить короткую ссылку на рецепт."""
         return Response({'message': f'Get your link to {pk} res.'})
