@@ -11,6 +11,7 @@ from django.core.files.base import ContentFile
 
 
 from recipes.models import (
+    FavoriteRecipe,
     Ingredient,
     Recipe,
     RecipeIngredient,
@@ -275,3 +276,24 @@ class RecipeListSerializer(serializers.ModelSerializer):
             'image',
             'cooking_time',
         )
+
+
+class FavoriteRecipeSerializer(serializers.ModelSerializer):
+    # validators = [UniqueValidator(queryset=FavoriteRecipe.objects.all())]
+
+    class Meta:
+        model = FavoriteRecipe
+        fields = '__all__'
+        # validators = [
+        #     UniqueTogetherValidator(
+        #         queryset=FavoriteRecipe.objects.all(),
+        #         fields=('user', 'recipe')
+        #     )
+        # ]
+
+    def validate(self, data):
+        if FavoriteRecipe.objects.filter(
+            user=data['user'], recipe=data['recipe']
+        ).exists():
+            raise serializers.ValidationError('Ай яйяйяй!')
+        return data

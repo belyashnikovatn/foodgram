@@ -13,14 +13,17 @@ from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 
 from api.serializers import (
+    FavoriteRecipeSerializer,
     IngredientSerializer,
     RecipeGetSerializer,
+    RecipeListSerializer,
     RecipePostSerializer,
     SubscriptionSerializer,
     TagSerializer,
     UserGetSerializer,
 )
 from recipes.models import (
+    FavoriteRecipe,
     Ingredient,
     Recipe,
     Subscription,
@@ -130,12 +133,26 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @favorite.mapping.post
     def add_into_fav(self, request, pk):
         """Добавить рецепт в избранное."""
-        return Response({'message': f'Add recipe into {pk} favs.'})
+        request.data['user'] = get_object_or_404(User, pk=request.user.id).id
+        request.data['recipe'] = get_object_or_404(Recipe, pk=pk).id
+        recipe = get_object_or_404(Recipe, pk=pk)
+        serializer = FavoriteRecipeSerializer(
+            data=request.data,
+            context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            # return Response(RecipeListSerializer(recipe).data)
+            return Response(RecipeListSerializer(recipe).data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @favorite.mapping.delete
     def del_from_fav(self, request, pk):
         """Удалить рецепт из избранного."""
-        return Response({'message': f'Del recipe from {pk} favs.'})
+        user = get_object_or_404(User, pk=request.user.id)
+        recipe = get_object_or_404(Recipe, pk=pk)
+        fave_recipe = FavoriteRecipe.objects.filter(user=user, recipe=recipe)
+        fave_recipe.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, permission_classes=(AllowAny,), url_path='get-link')
     def get_link(self, request, pk):
