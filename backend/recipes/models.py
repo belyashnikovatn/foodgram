@@ -153,3 +153,21 @@ class FavoriteRecipe(models.Model):
 
     def __str__(self):
         return f'Рецепт {self.recipe} находится в избранном у {self.user}'
+
+
+class ShopRecipe(models.Model):
+    """Рецепты в списке покупок пользователя"""
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name='shops'
+    )
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE, related_name='shopper'
+    )
+
+    class Meta:
+        ordering = ('user', 'recipe')
+        verbose_name = 'рецепт в списке покупок'
+        verbose_name_plural = 'Рецепты в списке покупок'
+
+    def __str__(self):
+        return f'Рецепт {self.recipe} находится в списке покупок у {self.user}'

@@ -16,6 +16,7 @@ from recipes.models import (
     Recipe,
     RecipeIngredient,
     RecipeTag,
+    ShopRecipe,
     Subscription,
     Tag
 )
@@ -293,6 +294,27 @@ class FavoriteRecipeSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if FavoriteRecipe.objects.filter(
+            user=data['user'], recipe=data['recipe']
+        ).exists():
+            raise serializers.ValidationError('Ай яйяйяй!')
+        return data
+
+
+class ShopRecipeSerializer(serializers.ModelSerializer):
+    # validators = [UniqueValidator(queryset=FavoriteRecipe.objects.all())]
+
+    class Meta:
+        model = ShopRecipe
+        fields = '__all__'
+        # validators = [
+        #     UniqueTogetherValidator(
+        #         queryset=FavoriteRecipe.objects.all(),
+        #         fields=('user', 'recipe')
+        #     )
+        # ]
+
+    def validate(self, data):
+        if ShopRecipe.objects.filter(
             user=data['user'], recipe=data['recipe']
         ).exists():
             raise serializers.ValidationError('Ай яйяйяй!')
