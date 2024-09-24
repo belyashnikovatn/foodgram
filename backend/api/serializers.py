@@ -42,25 +42,18 @@ class SetPasswordSerializer(serializers.Serializer):
 
 
 class UserPostSerializer(UserCreateSerializer):
-    """Для создания пользователя."""
+    """
+    ТОЛЬКО для создания пользователя.
+    Унаследован от djoser, чтобы взять пароль, токен итд.
+    """
 
     class Meta(UserCreateSerializer.Meta):
-        fields = ('email', 'username', 'first_name', 'last_name', 'password')
-
-    def to_representation(self, instance):
-        return UserPostResultSerializer(instance).data
-
-
-class UserPostResultSerializer(UserSerializer):
-    """Для отображения после создания пользователя."""
-
-    class Meta:
         model = User
-        fields = ('email', 'id', 'username', 'first_name', 'last_name')
+        fields = ('email', 'id', 'username', 'first_name', 'last_name', 'password')
 
 
 class UserGetSerializer(UserSerializer):
-    """Для отображения при запросе GET."""
+    """Для изменения и отображения при запросе GET."""
     is_subscribed = serializers.SerializerMethodField()
     avatar = Base64ImageField(required=False, allow_null=True)
 
@@ -70,10 +63,12 @@ class UserGetSerializer(UserSerializer):
             'email', 'id', 'username', 'first_name',
             'last_name', 'is_subscribed', 'avatar')
 
-    def update(self, instance, validated_data):
-        instance.avatar = validated_data.get('avatar', instance.avatar)
-        instance.save()
-        return instance
+    def validate(self, data):
+        if request := self.context.get('request', None):
+            if request.method == 'PUT' and len(data) == 0:
+                # print('5648798798789')
+                raise serializers.ValidationError('Photo should be ')
+        return data
 
     def get_is_subscribed(self, obj):
         request = self.context.get('request')

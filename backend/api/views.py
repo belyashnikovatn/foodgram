@@ -13,6 +13,7 @@ from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 
 from api.serializers import (
+    # AvatarSerializer,
     FavoriteRecipeSerializer,
     IngredientSerializer,
     RecipeGetSerializer,
@@ -22,6 +23,7 @@ from api.serializers import (
     SubscriptionSerializer,
     TagSerializer,
     UserGetSerializer,
+    UserPostSerializer,
 )
 from recipes.models import (
     FavoriteRecipe,
@@ -47,20 +49,30 @@ class UserViewSet(UVS, viewsets.ViewSet):
         serializer = UserGetSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(detail=False, url_path=r'me/avatar')
+    @action(detail=False, url_path=r'me/avatar', permission_classes=(IsAuthenticated,))
     def avatar(self, request):
         """Action для аватара."""
         return Response({'message': f'That action MAIN for {request.user}.'})
 
-    @avatar.mapping.patch
+    @avatar.mapping.put
     def set_avatar(self, request):
         """Добавить аватар текущего пользователя."""
-        return Response({'message': f'That action set avatar for {request.user}.'})
+        user = get_object_or_404(User, pk=request.user.id)
+        #  передаём контекст для проверки метода
+        serializer = UserGetSerializer(
+            user, data=request.data, partial=True,
+            context={'request': request})
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data['avatar'])
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @avatar.mapping.delete
     def delete_avatar(self, request):
         """Удалить аватар текущего пользователя."""
-        return Response({'message': f'That action delete avatar for {request.user}.'})
+        User.objects.filter(pk=request.user.id).update(avatar=None)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+        # return Response({'message': f'That action delete avatar for {request.user}.'})
 
     @action(detail=False, permission_classes=(IsAuthenticated,))
     def subscriptions(self, request):
