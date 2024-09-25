@@ -314,3 +314,39 @@ class ShopRecipeSerializer(serializers.ModelSerializer):
         ).exists():
             raise serializers.ValidationError('Ай яйяйяй!')
         return data
+
+
+class UserSubscriptions(serializers.ModelSerializer):
+    "Для отображения подписки: count_recepie и recipe"
+    recipes = RecipeListSerializer(many=True, read_only=True)
+    recipes_count = serializers.SerializerMethodField()
+    is_subscribed = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = (
+            'id',
+            'username',
+            'first_name',
+            'last_name',
+            'email',
+            'is_subscribed',
+            'avatar',
+            'recipes_count',
+            'recipes',
+        )
+
+    def get_is_subscribed(self, obj):
+        return True
+
+    def get_recipes_count(self, obj):
+        return obj.recipes.count()
+
+    def get_recipes(self, obj):
+        request = self.context.get('request')
+        limit = request.query_params.get('recipes_limit')
+        recipes = obj.recipes.all()
+        if limit:
+            recipes = recipes[:int(limit)]
+        serializer = RecipeListSerializer(recipes, many=True, read_only=True)
+        return serializer.data
