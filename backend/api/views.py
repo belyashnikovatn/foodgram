@@ -65,7 +65,7 @@ class UserViewSet(UVS, viewsets.ViewSet):
             context={'request': request})
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data['avatar'])
+            return Response({'avatar': serializer.data['avatar']})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @avatar.mapping.delete
