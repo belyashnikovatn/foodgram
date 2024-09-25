@@ -11,3 +11,4 @@ PyYAML==6.0
 python-dotenv
 gunicorn
 django-filter==23.1
+short_url
