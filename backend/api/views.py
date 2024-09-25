@@ -24,6 +24,7 @@ from api.serializers import (
     TagSerializer,
     UserGetSerializer,
     UserPostSerializer,
+    UserSubscriptions,
 )
 from recipes.models import (
     FavoriteRecipe,
@@ -72,15 +73,18 @@ class UserViewSet(UVS, viewsets.ViewSet):
         """Удалить аватар текущего пользователя."""
         User.objects.filter(pk=request.user.id).update(avatar=None)
         return Response(status=status.HTTP_204_NO_CONTENT)
-        # return Response({'message': f'That action delete avatar for {request.user}.'})
 
     @action(detail=False, permission_classes=(IsAuthenticated,))
     def subscriptions(self, request):
         """Список подписок."""
         user = get_object_or_404(User, pk=request.user.id)
-        subscriptions = user.following.all()
-        serializer = SubscriptionSerializer(subscriptions, many=True)
-        return Response(serializer.data)
+        users = [user.cooker for user in user.following.all()]
+        paginated_queryset = self.paginate_queryset(users)
+        serializer = UserSubscriptions(
+            paginated_queryset,
+            context={'request': request},
+            many=True)
+        return self.get_paginated_response(serializer.data)
 
     @action(detail=True, permission_classes=(IsAuthenticated,))
     def subscribe(self, request, id=None):
@@ -91,11 +95,12 @@ class UserViewSet(UVS, viewsets.ViewSet):
         """Подписаться на пользователя."""
         request.data['user'] = get_object_or_404(User, pk=request.user.id)
         request.data['cooker'] = get_object_or_404(User, pk=id)
+        cooker = get_object_or_404(User, pk=id)
         serializer = SubscriptionSerializer(data=request.data,
                                             context={'request': request})
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(UserSubscriptions(cooker).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @subscribe.mapping.delete
