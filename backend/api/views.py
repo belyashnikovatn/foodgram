@@ -1,3 +1,5 @@
+import short_url
+from django.conf import settings
 from django.shortcuts import render
 from django.contrib.auth import get_user_model
 from rest_framework.pagination import LimitOffsetPagination
@@ -35,8 +37,14 @@ from recipes.models import (
     Tag
 )
 from api.filters import IngredientFilter, RecipeFilter
+from django.shortcuts import redirect
 
 User = get_user_model()
+
+
+def redirect_view(request, s):
+    pk = short_url.decode_url(s)
+    return redirect(f'/api/recipes/{pk}')
 
 
 class UserViewSet(UVS, viewsets.ViewSet):
@@ -176,7 +184,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=True, permission_classes=(AllowAny,), url_path='get-link')
     def get_link(self, request, pk):
         """Получить короткую ссылку на рецепт."""
-        return Response({'message': f'Get your link to {pk} res.'})
+        # url = short_url.encode_url(int(pk))
+        url = 'https://{}/s/{}'.format(
+            settings.ALLOWED_HOSTS[-1],
+            short_url.encode_url(int(pk))
+        )
+        print(request)
+
+        return Response({'short-link': url})
 
     """Вот это место точно можно улушчить, но это потом"""
 
