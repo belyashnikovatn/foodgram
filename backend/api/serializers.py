@@ -2,6 +2,7 @@ import base64
 from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
 from rest_framework.validators import UniqueValidator
+from django.shortcuts import get_object_or_404
 
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from django.shortcuts import get_object_or_404
@@ -295,25 +296,74 @@ class FavoriteRecipeSerializer(serializers.ModelSerializer):
         return data
 
 
-class ShopRecipeSerializer(serializers.ModelSerializer):
-    # validators = [UniqueValidator(queryset=FavoriteRecipe.objects.all())]
+# class ShopRecipeSerializer(serializers.ModelSerializer):
+#     # validators = [UniqueValidator(queryset=FavoriteRecipe.objects.all())]
 
-    class Meta:
-        model = ShopRecipe
-        fields = '__all__'
-        # validators = [
-        #     UniqueTogetherValidator(
-        #         queryset=FavoriteRecipe.objects.all(),
-        #         fields=('user', 'recipe')
-        #     )
-        # ]
+#     class Meta:
+#         model = ShopRecipe
+#         fields = '__all__'
+#         # validators = [
+#         #     UniqueTogetherValidator(
+#         #         queryset=FavoriteRecipe.objects.all(),
+#         #         fields=('user', 'recipe')
+#         #     )
+#         # ]
+
+#     def validate(self, data):
+#         if ShopRecipe.objects.filter(
+#             user=data['user'], recipe=data['recipe']
+#         ).exists():
+#             raise serializers.ValidationError('Ай яйяйяй!')
+#         return data
+
+
+class ShopRecipeSerializer(serializers.Serializer):
 
     def validate(self, data):
-        if ShopRecipe.objects.filter(
-            user=data['user'], recipe=data['recipe']
-        ).exists():
+        # print(f'data = {data}')
+        # for item in data:
+        #     print(item)
+        # print(f'self.context = {self.context}')
+        request = self.context['request']
+        print(f'request= {request}')
+        user = self.context['request'].user
+        user_id = self.context['request'].user.id
+        recipe_id = self.context['recipe_pk']
+        action = self.context['action']
+        print(f'user= {user_id}')
+        print(f'recipe_id= {recipe_id}')
+        print(f'action= {action}')
+        recipe = get_object_or_404(Recipe, pk=recipe_id)
+
+        if not recipe:
             raise serializers.ValidationError('Ай яйяйяй!')
+        shoprecipe = ShopRecipe.objects.filter(user=user, recipe=recipe)
+        if action == 'del_from_cart':
+            # print(ShopRecipe.objects.filter(user=user, recipe=recipe).exists())
+            if not shoprecipe:
+                # print('!!!!!!!!!!!!!!!!!!')
+                # raise ValueError('ERRORR')
+                raise serializers.ValidationError('Thete is noy that sjop ')
+        if action == 'add_into_cart':
+            if shoprecipe:
+                raise serializers.ValidationError('Doulble trule ')
+        # return data
         return data
+
+    def create(self, validated_data):
+        print(f'fvalidated_data= {validated_data}')
+        recipe = get_object_or_404(Recipe, pk=validated_data['pk'])
+        ShopRecipe.objects.create(
+            user=self.context['request'].user,
+            recipe=recipe)
+        # print(type(recipe))
+        # print(recipe)
+        # serializer = RecipeListSerializer(recipe)
+        return RecipeListSerializer(recipe)
+
+    # def to_representation(self, instance):
+    #     print('self')
+    #     # return instance
 
 
 class UserSubscriptionsSerializer(serializers.ModelSerializer):
