@@ -6,7 +6,6 @@ from rest_framework.pagination import LimitOffsetPagination
 from django_filters.rest_framework import DjangoFilterBackend
 from django.shortcuts import get_object_or_404
 from api.permissions import OwnerOnly
-
 from djoser.views import UserViewSet as UVS
 from rest_framework import mixins, viewsets, status
 from rest_framework.decorators import action
@@ -26,7 +25,7 @@ from api.serializers import (
     TagSerializer,
     UserGetSerializer,
     UserPostSerializer,
-    UserSubscriptions,
+    UserSubscriptionsSerializer,
 )
 from recipes.models import (
     FavoriteRecipe,
@@ -97,11 +96,15 @@ class UserViewSet(UVS, viewsets.ViewSet):
         """Список подписок."""
         user = get_object_or_404(User, pk=request.user.id)
         users = [user.cooker for user in user.following.all()]
-        # limit_query_param = 'recipes_limit'
+        limit_param = request.query_params.get('recipes_limit')
         paginated_queryset = self.paginate_queryset(users)
-        serializer = UserSubscriptions(
+        serializer = UserSubscriptionsSerializer(
             paginated_queryset,
-            context={'request': request},
+            # users,
+            context={
+                'request': request,
+                'method': request.method,
+                'limit_param': limit_param},
             many=True)
         return self.get_paginated_response(serializer.data)
 
@@ -117,9 +120,22 @@ class UserViewSet(UVS, viewsets.ViewSet):
         cooker = get_object_or_404(User, pk=id)
         serializer = SubscriptionSerializer(data=request.data,
                                             context={'request': request})
+        limit_param = request.query_params.get('recipes_limit')
         if serializer.is_valid():
             serializer.save()
-            return Response(UserSubscriptions(cooker).data, status=status.HTTP_201_CREATED)
+            serializer = UserSubscriptionsSerializer(
+                cooker,
+                context={
+                    'request': request,
+                    'method': request.method,
+                    'limit_param': limit_param
+                }
+            )
+            return Response(
+                serializer.data,
+                status=status.HTTP_201_CREATED
+                )
+
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @subscribe.mapping.delete
@@ -153,6 +169,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     permission_classes = (IsAuthenticatedOrReadOnly, OwnerOnly)
     pagination_class = LimitOffsetPagination
+    # pagination_class = PageLimitPagination
     # pagination_class = RecipeLimitPage
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
