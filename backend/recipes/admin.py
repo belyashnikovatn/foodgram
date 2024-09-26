@@ -6,6 +6,8 @@ from recipes.models import (
     Recipe,
     Subscription,
     Tag,
+    ShopRecipe,
+    FavoriteRecipe,
 )
 
 
@@ -58,3 +60,13 @@ class RecipeAdmin(admin.ModelAdmin):
         TagInline,
         IngredientInline,
     ]
+
+
+@admin.register(ShopRecipe)
+class ShopRecipeAdmin(DisplayModelAdmin):
+    """Admin ShopRecipe."""
+
+
+@admin.register(FavoriteRecipe)
+class FavoriteRecipeAdmin(DisplayModelAdmin):
+    """Admin FavoriteRecipe."""

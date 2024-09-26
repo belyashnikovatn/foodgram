@@ -39,7 +39,17 @@ from recipes.models import (
 from api.filters import IngredientFilter, RecipeFilter
 from django.shortcuts import redirect
 
+
+from rest_framework.pagination import LimitOffsetPagination
+
 User = get_user_model()
+
+
+class RecipeLimitPage(LimitOffsetPagination):
+    limit_query_param = 'recipes_limit'
+
+
+
 
 
 def redirect_view(request, s):
@@ -87,6 +97,7 @@ class UserViewSet(UVS, viewsets.ViewSet):
         """Список подписок."""
         user = get_object_or_404(User, pk=request.user.id)
         users = [user.cooker for user in user.following.all()]
+        # limit_query_param = 'recipes_limit'
         paginated_queryset = self.paginate_queryset(users)
         serializer = UserSubscriptions(
             paginated_queryset,
@@ -142,6 +153,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     permission_classes = (IsAuthenticatedOrReadOnly, OwnerOnly)
     pagination_class = LimitOffsetPagination
+    # pagination_class = RecipeLimitPage
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
