@@ -316,9 +316,9 @@ class ShopRecipeSerializer(serializers.ModelSerializer):
         return data
 
 
-class UserSubscriptions(serializers.ModelSerializer):
-    "Для отображения подписки: count_recepie и recipe"
-    recipes = RecipeListSerializer(many=True, read_only=True)
+class UserSubscriptionsSerializer(serializers.ModelSerializer):
+    """Для отображения подписки: count_recepie и recipe"""
+    recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
     is_subscribed = serializers.SerializerMethodField()
 
@@ -343,10 +343,10 @@ class UserSubscriptions(serializers.ModelSerializer):
         return obj.recipes.count()
 
     def get_recipes(self, obj):
-        request = self.context.get('request')
-        limit = request.query_params.get('recipes_limit')
+        context = self.context
+        limit_param = context.get('limit_param')
         recipes = obj.recipes.all()
-        if limit:
-            recipes = recipes[:int(limit)]
+        if limit_param:
+            recipes = recipes[:int(limit_param)]
         serializer = RecipeListSerializer(recipes, many=True, read_only=True)
         return serializer.data
