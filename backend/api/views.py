@@ -109,43 +109,43 @@ class UserViewSet(UVS, viewsets.ViewSet):
         return self.get_paginated_response(serializer.data)
 
     @action(detail=True, permission_classes=(IsAuthenticated,))
-    def subscribe(self, request, id=None):
+    def subscribe(self, request, id):
         """Action для подписки/отписки."""
 
     @subscribe.mapping.post
-    def create_subs(self, request, id=None):
+    def create_subs(self, request, id):
         """Подписаться на пользователя."""
-        request.data['user'] = get_object_or_404(User, pk=request.user.id)
-        request.data['cooker'] = get_object_or_404(User, pk=id)
-        cooker = get_object_or_404(User, pk=id)
-        serializer = SubscriptionSerializer(data=request.data,
-                                            context={'request': request})
         limit_param = request.query_params.get('recipes_limit')
+        serializer = SubscriptionSerializer(
+            data=request.data,
+            context={
+                'request': request,
+                'user_pk': id,
+                'limit_param': limit_param,
+                'action': 'create_subs'})
         if serializer.is_valid():
-            serializer.save()
-            serializer = UserSubscriptionsSerializer(
-                cooker,
-                context={
-                    'request': request,
-                    'method': request.method,
-                    'limit_param': limit_param
-                }
-            )
-            return Response(
-                serializer.data,
-                status=status.HTTP_201_CREATED
-                )
-
+            subs = serializer.save(pk=id)
+            return Response(subs.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @subscribe.mapping.delete
-    def delete_subs(self, request, id=None):
+    def delete_subs(self, request, id):
         """Отписаться от пользователя."""
-        user = get_object_or_404(User, pk=request.user.id)
-        cooker = get_object_or_404(User, pk=id)
-        subscription = Subscription.objects.filter(user=user, cooker=cooker)
-        subscription.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        # limit_param = request.query_params.get('recipes_limit')
+        serializer = SubscriptionSerializer(
+            data=request.data,
+            context={
+                'request': request,
+                'user_pk': id,
+                # 'limit_param': limit_param,
+                'action': 'delete_subs'})
+        if serializer.is_valid():
+            get_object_or_404(
+                Subscription,
+                user=self.request.user,
+                cooker=get_object_or_404(User, pk=id)).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):

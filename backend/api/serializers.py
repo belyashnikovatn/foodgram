@@ -82,31 +82,32 @@ class UserGetSerializer(UserSerializer):
             user=user, cooker=obj).exists()
 
 
-class SubscriptionSerializer(serializers.ModelSerializer):
-    cooker = serializers.SlugRelatedField(
-        slug_field='username',
-        queryset=User.objects.all()
-    )
-    user = serializers.SlugRelatedField(
-        slug_field='username',
-        queryset=User.objects.all()
-    )
 
-    class Meta:
-        """"""
-        model = Subscription
-        fields = ('user', 'cooker')
-        validators = [
-            UniqueTogetherValidator(
-                queryset=Subscription.objects.all(),
-                fields=('user', 'cooker')
-            )
-        ]
+# class SubscriptionSerializer(serializers.ModelSerializer):
+#     cooker = serializers.SlugRelatedField(
+#         slug_field='username',
+#         queryset=User.objects.all()
+#     )
+#     user = serializers.SlugRelatedField(
+#         slug_field='username',
+#         queryset=User.objects.all()
+#     )
 
-    def validate(self, data):
-        if data['cooker'] == self.context['request'].user:
-            raise serializers.ValidationError('You cannot subscribe yourself')
-        return data
+#     class Meta:
+#         """"""
+#         model = Subscription
+#         fields = ('user', 'cooker')
+#         validators = [
+#             UniqueTogetherValidator(
+#                 queryset=Subscription.objects.all(),
+#                 fields=('user', 'cooker')
+#             )
+#         ]
+
+#     def validate(self, data):
+#         if data['cooker'] == self.context['request'].user:
+#             raise serializers.ValidationError('You cannot subscribe yourself')
+#         return data
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -354,6 +355,46 @@ class ShopRecipeSerializer(serializers.Serializer):
     #     # return instance
 
 
+class SubscriptionSerializer(serializers.Serializer):
+
+    def validate(self, data):
+        user = self.context['request'].user
+        subs_id = self.context['user_pk']
+        limit_param = self.context.get('limit_param')
+        action = self.context['action']
+        subs = get_object_or_404(User, pk=subs_id)
+        print(f'limit_param {limit_param}')
+
+        if not subs:
+            raise serializers.ValidationError('Нет такого юзера!')
+
+        if user == subs:
+            raise serializers.ValidationError('Вы что тздеваетесь???!')
+        subscription = Subscription.objects.filter(user=user, cooker=subs)
+        if action == 'delete_subs':
+            if not subscription:
+                raise serializers.ValidationError('Thete is noy that sjop ')
+        if action == 'create_subs':
+            if subscription:
+                raise serializers.ValidationError('Doulble trule ')
+        return data
+
+    def create(self, validated_data):
+        print(f'CONTEXT? {self.context}')
+        limit_param = self.context.get('limit_param')
+
+        print('validated DTA DATA ADTAD ')
+        print(validated_data)
+        subs = get_object_or_404(User, pk=validated_data['pk'])
+        Subscription.objects.create(
+            user=self.context['request'].user,
+            cooker=subs)
+        print('CDEAYED !!')
+        return UserSubscriptionsSerializer(
+            subs,
+            context={'limit_param': limit_param})
+
+
 class UserSubscriptionsSerializer(serializers.ModelSerializer):
     """Для отображения подписки: count_recepie и recipe"""
     recipes = serializers.SerializerMethodField()
@@ -382,6 +423,7 @@ class UserSubscriptionsSerializer(serializers.ModelSerializer):
 
     def get_recipes(self, obj):
         context = self.context
+        print(f'WHAT ABOUT THAT CONREXT {self.context}')
         limit_param = context.get('limit_param')
         recipes = obj.recipes.all()
         if limit_param:
