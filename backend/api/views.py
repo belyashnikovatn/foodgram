@@ -93,9 +93,8 @@ class UserViewSet(UVS):
         paginated_queryset = self.paginate_queryset(users)
         serializer = UserSubscriptionsSerializer(
             paginated_queryset,
+            # передаём контекст для лимита рецептов
             context={
-                'request': request,
-                'method': request.method,
                 'limit_param': limit_param},
             many=True)
         return self.get_paginated_response(serializer.data)
@@ -111,6 +110,7 @@ class UserViewSet(UVS):
         limit_param = request.query_params.get('recipes_limit')
         serializer = SubscriptionSerializer(
             data=request.data,
+            # передаём контекст для валидации
             context={
                 'request': request,
                 'user_pk': id,
@@ -126,6 +126,7 @@ class UserViewSet(UVS):
         """Отписаться от пользователя."""
         serializer = SubscriptionSerializer(
             data=request.data,
+            # передаём контекст для валидации
             context={
                 'request': request,
                 'user_pk': id,
@@ -171,9 +172,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filterset_class = RecipeFilter
 
     def get_serializer_class(self):
-        if self.action == 'list':
-            return RecipeGetSerializer
-        if self.action == 'retrieve':
+        if self.action in ('list', 'retrieve'):
             return RecipeGetSerializer
         return RecipePostSerializer
 
@@ -186,6 +185,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """Добавить рецепт в избранное."""
         serializer = FavoriteRecipeSerializer(
             data=request.data,
+            #  передаём контекст для валидации
             context={
                 'request': request,
                 'recipe_pk': pk,
@@ -200,6 +200,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """Удалить рецепт из избранного."""
         serializer = FavoriteRecipeSerializer(
             data=request.data,
+            #  передаём контекст для валидации
             context={
                 'request': request,
                 'recipe_pk': pk,

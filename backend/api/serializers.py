@@ -54,20 +54,20 @@ class UserGetSerializer(UserSerializer):
             'last_name', 'is_subscribed', 'avatar')
 
     def validate(self, data):
-        if request := self.context.get('request', None):
+        """Фото не пустое?"""
+        if request := self.context.get('request'):
             if request.method == 'PUT' and len(data) == 0:
-                raise serializers.ValidationError('Photo should be ')
+                raise serializers.ValidationError('Выберите фото')
         return data
 
     def get_is_subscribed(self, obj):
-        request = self.context.get('request')
-        if not request:
-            return False
-        user = request.user
-        if user.is_anonymous:
-            return False
-        return Subscription.objects.filter(
-            user=user, cooker=obj).exists()
+        """Текущий юзер подписан?"""
+        if request := self.context.get('request'):
+            if request.user.is_anonymous:
+                return False
+            return Subscription.objects.filter(
+                user=request.user, cooker=obj).exists()
+        return False
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -171,13 +171,13 @@ class RecipePostSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         if 'tags' not in data or 'ingredients' not in data:
-            raise serializers.ValidationError('!!!')
+            raise serializers.ValidationError(
+                'Рецепт не может быть без тегов или ингредиентов')
         return data
 
     def validate_ingredients(self, data):
-        """"""
-        if not data:
-            raise serializers.ValidationError('Ай яйяйяй!')
+        # if not data:
+        #     raise serializers.ValidationError('Ай яйяйяй!')
         ingredients_list = [dict(item)['id'].id for item in data]
         ingredients_set = set(ingredients_list)
         if len(ingredients_list) != len(ingredients_set):
@@ -185,9 +185,8 @@ class RecipePostSerializer(serializers.ModelSerializer):
         return data
 
     def validate_tags(self, data):
-        """"""
-        if not data:
-            raise serializers.ValidationError('Ай яйяйяй!')
+        # if not data:
+        #     raise serializers.ValidationError('Ай яйяйяй!')
         tags_list = [item.id for item in data]
         tags_set = set(tags_list)
         if len(tags_list) != len(tags_set):
@@ -203,37 +202,50 @@ class RecipePostSerializer(serializers.ModelSerializer):
         for ingredient in ingredients:
             product = dict(ingredient)['id']
             amount = dict(ingredient)['amount']
-            RecipeIngredient.objects.create(recipe=recipe, ingredient=product, amount=amount)
+            RecipeIngredient.objects.create(
+                recipe=recipe,
+                ingredient=product,
+                amount=amount)
         return recipe
 
     def update(self, instance, validated_data):
         recipe = instance
+
+        # Работа с тегами: удалить/добавить
         old_tags = recipe.tags.all()
         new_tags = validated_data.pop('tags')
         to_del = set(old_tags) - set(new_tags)
+        # Удаляем те теги, которых нет в новых данных
         RecipeTag.objects.filter(recipe=recipe, tag__in=to_del).delete()
         to_add = set(new_tags) - set(old_tags)
+        # Добавляем те теги, которых нет в рецепте
         RecipeTag.objects.bulk_create([
             RecipeTag(recipe=recipe, tag=tag) for tag in to_add
         ])
 
+        # Работа с инредиентами: удалить, добавить, изменить
         old_ingredients = RecipeIngredient.objects.filter(recipe=recipe)
-        old_ingredients_products = [RecipeIngredient.ingredient_id for RecipeIngredient in old_ingredients]
+        old_ingredients_products = [
+            recipeingredient.ingredient_id for recipeingredient
+            in old_ingredients]
         new_ingredients = validated_data.pop('ingredients')
         new_ingredients_ids = [dict(item)['id'].id for item in new_ingredients]
 
         # Удаляем те ингредиенты, которых нет в новых данных.
         for item in old_ingredients:
             if item.ingredient.id not in new_ingredients_ids:
-                RecipeIngredient.objects.filter(ingredient=item.ingredient).delete()
+                RecipeIngredient.objects.filter(
+                    ingredient=item.ingredient).delete()
         # Добавляем те ингредиенты, которых нет в рецепте.
         # Обновляем количество тех, которые есть в рецепте.
         for item in new_ingredients:
             product, amount = dict(item)['id'], dict(item)['amount']
             if product.id not in old_ingredients_products:
-                RecipeIngredient.objects.create(recipe=recipe, ingredient=product, amount=amount)
+                RecipeIngredient.objects.create(
+                    recipe=recipe, ingredient=product, amount=amount)
             else:
-                RecipeIngredient.objects.filter(recipe=recipe, ingredient=product).update(amount=amount)
+                RecipeIngredient.objects.filter(
+                    recipe=recipe, ingredient=product).update(amount=amount)
         Recipe.objects.filter(id=recipe.id).update(**validated_data)
         return recipe
 
@@ -304,7 +316,7 @@ class ShopRecipeSerializer(serializers.Serializer):
         return data
 
     def create(self, validated_data):
-        recipe = get_object_or_404(Recipe, pk=validated_data['pk'])
+        recipe = get_object_or_404(Recipe, pk=validated_data.get('pk'))
         ShopRecipe.objects.create(
             user=self.context['request'].user,
             recipe=recipe)
@@ -312,34 +324,33 @@ class ShopRecipeSerializer(serializers.Serializer):
 
 
 class SubscriptionSerializer(serializers.Serializer):
-    """Для проверки и создания подписки"""
+    """Для валидации и создания подписки"""
 
     def validate(self, data):
-        user = self.context['request'].user
-        subs_id = self.context['user_pk']
-        limit_param = self.context.get('limit_param')
-        action = self.context['action']
+        user = self.context.get('request').user
+        subs_id = self.context.get('user_pk')
+        action = self.context.get('action')
+
         subs = get_object_or_404(User, pk=subs_id)
-
         if not subs:
-            raise serializers.ValidationError('Нет такого юзера!')
-
+            raise serializers.ValidationError('А на кого подписываемся?')
         if user == subs:
-            raise serializers.ValidationError('Вы что тздеваетесь???!')
+            raise serializers.ValidationError('На себя нельзя подписаться')
+
         subscription = Subscription.objects.filter(user=user, cooker=subs)
         if action == 'delete_subs':
             if not subscription:
-                raise serializers.ValidationError('Thete is noy that sjop ')
+                raise serializers.ValidationError('Такой подписки нет')
         if action == 'create_subs':
             if subscription:
-                raise serializers.ValidationError('Doulble trule ')
+                raise serializers.ValidationError('Подписка уже есть')
         return data
 
     def create(self, validated_data):
         limit_param = self.context.get('limit_param')
-        subs = get_object_or_404(User, pk=validated_data['pk'])
+        subs = get_object_or_404(User, pk=validated_data.get('pk'))
         Subscription.objects.create(
-            user=self.context['request'].user,
+            user=self.context.get('request').user,
             cooker=subs)
         return UserSubscriptionsSerializer(
             subs,
@@ -373,10 +384,8 @@ class UserSubscriptionsSerializer(serializers.ModelSerializer):
         return obj.recipes.count()
 
     def get_recipes(self, obj):
-        context = self.context
-        limit_param = context.get('limit_param')
         recipes = obj.recipes.all()
-        if limit_param:
+        if limit_param := self.context.get('limit_param'):
             recipes = recipes[:int(limit_param)]
         serializer = RecipeListSerializer(recipes, many=True, read_only=True)
         return serializer.data
