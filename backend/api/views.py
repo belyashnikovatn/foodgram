@@ -43,7 +43,7 @@ def redirect_view(request, s):
     return redirect(f'/api/recipes/{pk}')
 
 
-class UserViewSet(UVS, viewsets.ViewSet):
+class UserViewSet(UVS):
     """
     Вьюсет для работы с пользователем:
     регистрация, изменение, смена пароля -- djoser.
@@ -64,7 +64,6 @@ class UserViewSet(UVS, viewsets.ViewSet):
             permission_classes=(IsAuthenticated,))
     def avatar(self, request):
         """Action для аватара."""
-        return Response({'message': f'That action MAIN for {request.user}.'})
 
     @avatar.mapping.put
     def set_avatar(self, request):
@@ -101,7 +100,8 @@ class UserViewSet(UVS, viewsets.ViewSet):
             many=True)
         return self.get_paginated_response(serializer.data)
 
-    @action(detail=True, permission_classes=(IsAuthenticated,))
+    @action(detail=True,
+            permission_classes=(IsAuthenticated,))
     def subscribe(self, request, id):
         """Action для подписки/отписки."""
 
@@ -180,7 +180,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=True, permission_classes=(IsAuthenticated,))
     def favorite(self, request, pk):
         """Action для избранного рецепта."""
-        return Response({'message': f'That MAIN recipe action for {self}.'})
 
     @favorite.mapping.post
     def add_into_fav(self, request, pk):
@@ -227,7 +226,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=True, permission_classes=(IsAuthenticated,))
     def shopping_cart(self, request, pk):
         """Action для списка покупок."""
-        return Response({'message': f'That MAIN shopping_cart action for {self}.'})
 
     @shopping_cart.mapping.post
     def add_into_cart(self, request, pk):
