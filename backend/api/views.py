@@ -94,7 +94,6 @@ class UserViewSet(UVS, viewsets.ViewSet):
         paginated_queryset = self.paginate_queryset(users)
         serializer = UserSubscriptionsSerializer(
             paginated_queryset,
-            # users,
             context={
                 'request': request,
                 'method': request.method,
@@ -125,13 +124,11 @@ class UserViewSet(UVS, viewsets.ViewSet):
     @subscribe.mapping.delete
     def delete_subs(self, request, id):
         """Отписаться от пользователя."""
-        # limit_param = request.query_params.get('recipes_limit')
         serializer = SubscriptionSerializer(
             data=request.data,
             context={
                 'request': request,
                 'user_pk': id,
-                # 'limit_param': limit_param,
                 'action': 'delete_subs'})
         if serializer.is_valid():
             get_object_or_404(
@@ -157,7 +154,6 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
     pagination_class = None
     permission_classes = (AllowAny,)
     filter_backends = (DjangoFilterBackend,)
-    # filterset_fields = ('name',)
     filterset_class = IngredientFilter
 
 
@@ -220,13 +216,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=True, permission_classes=(AllowAny,), url_path='get-link')
     def get_link(self, request, pk):
         """Получить короткую ссылку на рецепт."""
-        # url = short_url.encode_url(int(pk))
         url = 'https://{}/s/{}'.format(
             settings.ALLOWED_HOSTS[-1],
             short_url.encode_url(int(pk))
         )
-        print(request)
-
         return Response({'short-link': url})
 
     """Вот это место точно можно улушчить, но это потом"""
@@ -247,9 +240,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 'action': 'add_into_cart'})
         if serializer.is_valid():
             short_recipe = serializer.save(pk=pk)
-            # return Response({'message': 'Its all goor Gonna ADD.'})
             return Response(short_recipe.data, status=status.HTTP_201_CREATED)
-            # return Response(, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @shopping_cart.mapping.delete

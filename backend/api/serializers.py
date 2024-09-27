@@ -56,7 +56,6 @@ class UserGetSerializer(UserSerializer):
     def validate(self, data):
         if request := self.context.get('request', None):
             if request.method == 'PUT' and len(data) == 0:
-                # print('5648798798789')
                 raise serializers.ValidationError('Photo should be ')
         return data
 
@@ -217,21 +216,15 @@ class RecipePostSerializer(serializers.ModelSerializer):
         RecipeTag.objects.bulk_create([
             RecipeTag(recipe=recipe, tag=tag) for tag in to_add
         ])
-        # print(type(to_del), to_del)
-        print('00000000000000000000')
-        # to_del = set(old_ingredients) - set(new_ingredients)
-        # to_add = set(new_ingredients) - set(old_ingredients)
 
         old_ingredients = RecipeIngredient.objects.filter(recipe=recipe)
         old_ingredients_products = [RecipeIngredient.ingredient_id for RecipeIngredient in old_ingredients]
-        # print(old_ingredients_products)
         new_ingredients = validated_data.pop('ingredients')
         new_ingredients_ids = [dict(item)['id'].id for item in new_ingredients]
 
         # Удаляем те ингредиенты, которых нет в новых данных.
         for item in old_ingredients:
             if item.ingredient.id not in new_ingredients_ids:
-                print(f'this is gona del {item.ingredient}')
                 RecipeIngredient.objects.filter(ingredient=item.ingredient).delete()
         # Добавляем те ингредиенты, которых нет в рецепте.
         # Обновляем количество тех, которые есть в рецепте.
@@ -269,16 +262,13 @@ class FavoriteRecipeSerializer(serializers.Serializer):
         user = self.context['request'].user
         recipe_id = self.context['recipe_pk']
         action = self.context['action']
-        print(f'user = {user} recipe_id = {recipe_id} action = {action}')
         recipe = get_object_or_404(Recipe, pk=recipe_id)
 
         if not recipe:
             raise serializers.ValidationError('Ай яйяйяй!')
         faverecipe = FavoriteRecipe.objects.filter(user=user, recipe=recipe)
         if action == 'del_from_fav':
-            # print('THIS IS DELETION FROM FAV')
             if not faverecipe:
-                # print('THER IS NOY SAUCHREIPE   DHFH GSD DGGS ')
                 raise serializers.ValidationError('Thete is noy that sjop ')
         if action == 'add_into_fav':
             if faverecipe:
@@ -297,15 +287,9 @@ class ShopRecipeSerializer(serializers.Serializer):
     """И ОБЪЕДИНИТЬ ВОТ С ЭТИМ"""
 
     def validate(self, data):
-        request = self.context['request']
-        print(f'request= {request}')
         user = self.context['request'].user
-        user_id = self.context['request'].user.id
         recipe_id = self.context['recipe_pk']
         action = self.context['action']
-        print(f'user= {user_id}')
-        print(f'recipe_id= {recipe_id}')
-        print(f'action= {action}')
         recipe = get_object_or_404(Recipe, pk=recipe_id)
 
         if not recipe:
@@ -317,11 +301,9 @@ class ShopRecipeSerializer(serializers.Serializer):
         if action == 'add_into_cart':
             if shoprecipe:
                 raise serializers.ValidationError('Doulble trule ')
-        # return data
         return data
 
     def create(self, validated_data):
-        print(f'fvalidated_data= {validated_data}')
         recipe = get_object_or_404(Recipe, pk=validated_data['pk'])
         ShopRecipe.objects.create(
             user=self.context['request'].user,
@@ -338,7 +320,6 @@ class SubscriptionSerializer(serializers.Serializer):
         limit_param = self.context.get('limit_param')
         action = self.context['action']
         subs = get_object_or_404(User, pk=subs_id)
-        print(f'limit_param {limit_param}')
 
         if not subs:
             raise serializers.ValidationError('Нет такого юзера!')
@@ -355,16 +336,11 @@ class SubscriptionSerializer(serializers.Serializer):
         return data
 
     def create(self, validated_data):
-        print(f'CONTEXT? {self.context}')
         limit_param = self.context.get('limit_param')
-
-        print('validated DTA DATA ADTAD ')
-        print(validated_data)
         subs = get_object_or_404(User, pk=validated_data['pk'])
         Subscription.objects.create(
             user=self.context['request'].user,
             cooker=subs)
-        print('CDEAYED !!')
         return UserSubscriptionsSerializer(
             subs,
             context={'limit_param': limit_param})
@@ -398,7 +374,6 @@ class UserSubscriptionsSerializer(serializers.ModelSerializer):
 
     def get_recipes(self, obj):
         context = self.context
-        print(f'WHAT ABOUT THAT CONREXT {self.context}')
         limit_param = context.get('limit_param')
         recipes = obj.recipes.all()
         if limit_param:
