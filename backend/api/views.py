@@ -189,26 +189,33 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @favorite.mapping.post
     def add_into_fav(self, request, pk):
         """Добавить рецепт в избранное."""
-        request.data['user'] = get_object_or_404(User, pk=request.user.id).id
-        request.data['recipe'] = get_object_or_404(Recipe, pk=pk).id
-        recipe = get_object_or_404(Recipe, pk=pk)
         serializer = FavoriteRecipeSerializer(
             data=request.data,
-            context={'request': request})
+            context={
+                'request': request,
+                'recipe_pk': pk,
+                'action': 'add_into_fav'})
         if serializer.is_valid():
-            serializer.save()
-            # return Response(RecipeListSerializer(recipe).data)
-            return Response(RecipeListSerializer(recipe).data, status=status.HTTP_201_CREATED)
+            short_recipe = serializer.save(pk=pk)
+            return Response(short_recipe.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @favorite.mapping.delete
     def del_from_fav(self, request, pk):
         """Удалить рецепт из избранного."""
-        user = get_object_or_404(User, pk=request.user.id)
-        recipe = get_object_or_404(Recipe, pk=pk)
-        fave_recipe = FavoriteRecipe.objects.filter(user=user, recipe=recipe)
-        fave_recipe.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        serializer = FavoriteRecipeSerializer(
+            data=request.data,
+            context={
+                'request': request,
+                'recipe_pk': pk,
+                'action': 'del_from_fav'})
+        if serializer.is_valid():
+            get_object_or_404(
+                FavoriteRecipe,
+                user=self.request.user,
+                recipe=get_object_or_404(Recipe, pk=pk)).delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, permission_classes=(AllowAny,), url_path='get-link')
     def get_link(self, request, pk):
@@ -261,36 +268,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 recipe=get_object_or_404(Recipe, pk=pk)).delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-            # return Response({'message': 'Its all goor Gonna DDELLL.'})
-            # serializer.save()
-        # user = get_object_or_404(User, pk=request.user.id)
-        # recipe = get_object_or_404(Recipe, pk=pk)
-        # shop_recipe = ShopRecipe.objects.filter(user=user, recipe=recipe)
-        # shop_recipe.delete()
-
-    # @shopping_cart.mapping.post
-    # def add_into_cart(self, request, pk):
-    #     """Добавить рецепт в список покупок."""
-    #     request.data['user'] = get_object_or_404(User, pk=request.user.id).id
-    #     request.data['recipe'] = get_object_or_404(Recipe, pk=pk).id
-    #     recipe = get_object_or_404(Recipe, pk=pk)
-    #     serializer = ShopRecipeSerializer(
-    #         data=request.data,
-    #         context={'request': request})
-    #     if serializer.is_valid():
-    #         serializer.save()
-    #         # return Response(RecipeListSerializer(recipe).data)
-    #         return Response(RecipeListSerializer(recipe).data, status=status.HTTP_201_CREATED)
-    #     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-    # @shopping_cart.mapping.delete
-    # def del_from_cart(self, request, pk):
-    #     """Удалить рецепт из списка покупок."""
-    #     user = get_object_or_404(User, pk=request.user.id)
-    #     recipe = get_object_or_404(Recipe, pk=pk)
-    #     shop_recipe = ShopRecipe.objects.filter(user=user, recipe=recipe)
-    #     shop_recipe.delete()
-    #     return Response(status=status.HTTP_204_NO_CONTENT)   
 
     @action(detail=False, permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request):
