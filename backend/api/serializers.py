@@ -275,46 +275,34 @@ class RecipeListSerializer(serializers.ModelSerializer):
         )
 
 
-class FavoriteRecipeSerializer(serializers.ModelSerializer):
-    # validators = [UniqueValidator(queryset=FavoriteRecipe.objects.all())]
-
-    class Meta:
-        model = FavoriteRecipe
-        fields = '__all__'
-        # validators = [
-        #     UniqueTogetherValidator(
-        #         queryset=FavoriteRecipe.objects.all(),
-        #         fields=('user', 'recipe')
-        #     )
-        # ]
+class FavoriteRecipeSerializer(serializers.Serializer):
 
     def validate(self, data):
-        if FavoriteRecipe.objects.filter(
-            user=data['user'], recipe=data['recipe']
-        ).exists():
+        user = self.context['request'].user
+        recipe_id = self.context['recipe_pk']
+        action = self.context['action']
+        print(f'user = {user} recipe_id = {recipe_id} action = {action}')
+        recipe = get_object_or_404(Recipe, pk=recipe_id)
+
+        if not recipe:
             raise serializers.ValidationError('Ай яйяйяй!')
+        faverecipe = FavoriteRecipe.objects.filter(user=user, recipe=recipe)
+        if action == 'del_from_fav':
+            # print('THIS IS DELETION FROM FAV')
+            if not faverecipe:
+                # print('THER IS NOY SAUCHREIPE   DHFH GSD DGGS ')
+                raise serializers.ValidationError('Thete is noy that sjop ')
+        if action == 'add_into_fav':
+            if faverecipe:
+                raise serializers.ValidationError('Doulble trule ')
         return data
 
-
-# class ShopRecipeSerializer(serializers.ModelSerializer):
-#     # validators = [UniqueValidator(queryset=FavoriteRecipe.objects.all())]
-
-#     class Meta:
-#         model = ShopRecipe
-#         fields = '__all__'
-#         # validators = [
-#         #     UniqueTogetherValidator(
-#         #         queryset=FavoriteRecipe.objects.all(),
-#         #         fields=('user', 'recipe')
-#         #     )
-#         # ]
-
-#     def validate(self, data):
-#         if ShopRecipe.objects.filter(
-#             user=data['user'], recipe=data['recipe']
-#         ).exists():
-#             raise serializers.ValidationError('Ай яйяйяй!')
-#         return data
+    def create(self, validated_data):
+        recipe = get_object_or_404(Recipe, pk=validated_data['pk'])
+        FavoriteRecipe.objects.create(
+            user=self.context['request'].user,
+            recipe=recipe)
+        return RecipeListSerializer(recipe)
 
 
 class ShopRecipeSerializer(serializers.Serializer):
