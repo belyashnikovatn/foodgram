@@ -1,9 +1,8 @@
-from django.db import models
 from django.contrib.auth import get_user_model
+from django.db import models
 
 from foodgram.constants import SLICE_LENGTH
 from foodgram.validators import real_time
-
 
 User = get_user_model()
 
@@ -47,7 +46,9 @@ class Recipe(models.Model):
         'Время приготовления (в минутах)',
         validators=(real_time,),
     )
-    image = models.ImageField(upload_to='recipes')
+    image = models.ImageField(
+        upload_to='recipes',
+        verbose_name='Красивая картинка')
     author = models.ForeignKey(
         User,
         verbose_name='Автор рецепта',
@@ -79,12 +80,16 @@ class Recipe(models.Model):
 class RecipeTag(models.Model):
     """Тэги конкретного рецепта"""
 
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    tag = models.ForeignKey(Tag, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE,
+        verbose_name='Рецепт')
+    tag = models.ForeignKey(
+        Tag, on_delete=models.CASCADE,
+        verbose_name='Тег')
 
     class Meta:
-        verbose_name = 'тэг рецепта'
-        verbose_name_plural = 'Тэги рецепта'
+        verbose_name = 'тэг для рецепта'
+        verbose_name_plural = 'Тэги для рецепта'
         constraints = [
             models.UniqueConstraint(
                 fields=['recipe', 'tag'],
@@ -92,15 +97,19 @@ class RecipeTag(models.Model):
             )
         ]
 
-    # def __str__(self):
-        # return f'На {self.tag} подойдёт {self.recipe[:SLICE_LENGTH]}'
+    def __str__(self):
+        return f'На {self.tag} подойдёт {self.recipe}'
 
 
 class RecipeIngredient(models.Model):
     """Ингредиенты конкретного рецепта"""
 
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(
+        Recipe, on_delete=models.CASCADE,
+        verbose_name='Рецепт')
+    ingredient = models.ForeignKey(
+        Ingredient, on_delete=models.CASCADE,
+        verbose_name='Ингредиент')
     amount = models.IntegerField('Количество в рецепте')
 
     class Meta:
@@ -113,25 +122,29 @@ class RecipeIngredient(models.Model):
             )
         ]
 
-    # def __str__(self):
-        # return f'{self.ingredient} в {self.recipe[:SLICE_LENGTH]}'
+    def __str__(self):
+        return f'Закидываем {self.ingredient} в {self.recipe}'
 
 
 class Subscription(models.Model):
+    """Подписка пользователя на пользователя"""
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='following')
+        User, on_delete=models.CASCADE, related_name='following',
+        verbose_name='Пользователь')
     cooker = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='followers')
+        User, on_delete=models.CASCADE, related_name='followers',
+        verbose_name='Повар')
 
     class Meta:
+        ordering = ('user',)
         verbose_name = 'подипска'
         verbose_name_plural = 'Подписки'
-        # constraints = [
-        #     models.UniqueConstraint(
-        #         fields=['user', 'cooker'],
-        #         name='unique_subscriptions'
-        #     )
-        # ]
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'cooker'],
+                name='unique_user_cooker'
+            )
+        ]
 
     def __str__(self):
         return f'{self.user} подписан(а) на {self.cooker}'
@@ -140,10 +153,12 @@ class Subscription(models.Model):
 class FavoriteRecipe(models.Model):
     """Избранные рецепты пользователя"""
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='likes'
+        User, on_delete=models.CASCADE, related_name='likes',
+        verbose_name='Пользователь'
     )
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name='followers'
+        Recipe, on_delete=models.CASCADE, related_name='followers',
+        verbose_name='Рецепт'
     )
 
     class Meta:
@@ -158,10 +173,12 @@ class FavoriteRecipe(models.Model):
 class ShopRecipe(models.Model):
     """Рецепты в списке покупок пользователя"""
     user = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name='shops'
+        User, on_delete=models.CASCADE, related_name='shops',
+        verbose_name='Пользователь'
     )
     recipe = models.ForeignKey(
-        Recipe, on_delete=models.CASCADE, related_name='shopper'
+        Recipe, on_delete=models.CASCADE, related_name='shopper',
+        verbose_name='Рецепт'
     )
 
     class Meta:

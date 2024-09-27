@@ -1,8 +1,7 @@
-from django_filters import rest_framework as filters
 from django.contrib.auth import get_user_model
+from django_filters import rest_framework as filters
 
-from recipes.models import Ingredient, Recipe, Tag
-
+from recipes.models import Ingredient, Recipe
 
 User = get_user_model()
 
@@ -21,7 +20,10 @@ class IngredientFilter(filters.FilterSet):
 
 
 class RecipeFilter(filters.FilterSet):
-    """Фильтрация по избранному, автору, списку покупок и тегам."""
+    """
+    Фильтрация рецептов:
+    по автору, в избранном, в списке покупок и по тегам.
+    """
 
     author = filters.ModelChoiceFilter(
         field_name='author',
@@ -30,11 +32,14 @@ class RecipeFilter(filters.FilterSet):
     )
 
     tags = filters.AllValuesMultipleFilter(
+        label='Теги',
         field_name='tags__slug',
     )
     is_in_shopping_cart = filters.BooleanFilter(
+        label='В списке покупок',
         method='filter_is_in_shopping_cart')
     is_favorited = filters.BooleanFilter(
+        label='В избранном',
         method='filter_is_favorited')
 
     class Meta:

@@ -1,30 +1,28 @@
 import short_url
+
 from django.conf import settings
-from django.shortcuts import render
 from django.contrib.auth import get_user_model
-from rest_framework.pagination import LimitOffsetPagination
+from django.shortcuts import get_object_or_404, redirect
 from django_filters.rest_framework import DjangoFilterBackend
-from django.shortcuts import get_object_or_404
-from api.permissions import OwnerOnly
 from djoser.views import UserViewSet as UVS
-from rest_framework import mixins, viewsets, status
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.response import Response
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
+from rest_framework.response import Response
 
+from api.filters import IngredientFilter, RecipeFilter
+from api.permissions import OwnerOnly
 from api.serializers import (
-    # AvatarSerializer,
     FavoriteRecipeSerializer,
     IngredientSerializer,
     RecipeGetSerializer,
-    RecipeListSerializer,
     RecipePostSerializer,
     ShopRecipeSerializer,
     SubscriptionSerializer,
     TagSerializer,
     UserGetSerializer,
-    UserPostSerializer,
     UserSubscriptionsSerializer,
 )
 from recipes.models import (
@@ -35,28 +33,23 @@ from recipes.models import (
     Subscription,
     Tag
 )
-from api.filters import IngredientFilter, RecipeFilter
-from django.shortcuts import redirect
-
-
-from rest_framework.pagination import LimitOffsetPagination
 
 User = get_user_model()
 
 
-class RecipeLimitPage(LimitOffsetPagination):
-    limit_query_param = 'recipes_limit'
-
-
-
-
-
 def redirect_view(request, s):
+    """Redirect для короткой ссылки"""
     pk = short_url.decode_url(s)
     return redirect(f'/api/recipes/{pk}')
 
 
-class UserViewSet(UVS, viewsets.ViewSet):
+class UserViewSet(UVS):
+    """
+    Вьюсет для работы с пользователем:
+    регистрация, изменение, смена пароля -- djoser.
+    Дполнительно: профиль, смена аватара, список подписок,
+    создание/удаление подписки
+    """
     queryset = User.objects.all()
     pagination_class = LimitOffsetPagination
 
@@ -67,10 +60,10 @@ class UserViewSet(UVS, viewsets.ViewSet):
         serializer = UserGetSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(detail=False, url_path=r'me/avatar', permission_classes=(IsAuthenticated,))
+    @action(detail=False, url_path=r'me/avatar',
+            permission_classes=(IsAuthenticated,))
     def avatar(self, request):
         """Action для аватара."""
-        return Response({'message': f'That action MAIN for {request.user}.'})
 
     @avatar.mapping.put
     def set_avatar(self, request):
@@ -100,15 +93,14 @@ class UserViewSet(UVS, viewsets.ViewSet):
         paginated_queryset = self.paginate_queryset(users)
         serializer = UserSubscriptionsSerializer(
             paginated_queryset,
-            # users,
+            # передаём контекст для лимита рецептов
             context={
-                'request': request,
-                'method': request.method,
                 'limit_param': limit_param},
             many=True)
         return self.get_paginated_response(serializer.data)
 
-    @action(detail=True, permission_classes=(IsAuthenticated,))
+    @action(detail=True,
+            permission_classes=(IsAuthenticated,))
     def subscribe(self, request, id):
         """Action для подписки/отписки."""
 
@@ -118,6 +110,7 @@ class UserViewSet(UVS, viewsets.ViewSet):
         limit_param = request.query_params.get('recipes_limit')
         serializer = SubscriptionSerializer(
             data=request.data,
+            # передаём контекст для валидации
             context={
                 'request': request,
                 'user_pk': id,
@@ -131,13 +124,12 @@ class UserViewSet(UVS, viewsets.ViewSet):
     @subscribe.mapping.delete
     def delete_subs(self, request, id):
         """Отписаться от пользователя."""
-        # limit_param = request.query_params.get('recipes_limit')
         serializer = SubscriptionSerializer(
             data=request.data,
+            # передаём контекст для валидации
             context={
                 'request': request,
                 'user_pk': id,
-                # 'limit_param': limit_param,
                 'action': 'delete_subs'})
         if serializer.is_valid():
             get_object_or_404(
@@ -149,6 +141,7 @@ class UserViewSet(UVS, viewsets.ViewSet):
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
+    """Для тегов"""
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     pagination_class = None
@@ -156,41 +149,43 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+    """Для ингредиентов"""
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     pagination_class = None
     permission_classes = (AllowAny,)
     filter_backends = (DjangoFilterBackend,)
-    # filterset_fields = ('name',)
     filterset_class = IngredientFilter
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    """
+    Вьюсет для рецептов: все CRUD операции,
+    добавить/удалить в избранное/список покупок,
+    получить короткую ссылку,
+    скачать список покупок.
+    """
     queryset = Recipe.objects.all()
     permission_classes = (IsAuthenticatedOrReadOnly, OwnerOnly)
     pagination_class = LimitOffsetPagination
-    # pagination_class = PageLimitPagination
-    # pagination_class = RecipeLimitPage
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
     def get_serializer_class(self):
-        if self.action == 'list':
-            return RecipeGetSerializer
-        if self.action == 'retrieve':
+        if self.action in ('list', 'retrieve'):
             return RecipeGetSerializer
         return RecipePostSerializer
 
     @action(detail=True, permission_classes=(IsAuthenticated,))
     def favorite(self, request, pk):
         """Action для избранного рецепта."""
-        return Response({'message': f'That MAIN recipe action for {self}.'})
 
     @favorite.mapping.post
     def add_into_fav(self, request, pk):
         """Добавить рецепт в избранное."""
         serializer = FavoriteRecipeSerializer(
             data=request.data,
+            #  передаём контекст для валидации
             context={
                 'request': request,
                 'recipe_pk': pk,
@@ -205,6 +200,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """Удалить рецепт из избранного."""
         serializer = FavoriteRecipeSerializer(
             data=request.data,
+            #  передаём контекст для валидации
             context={
                 'request': request,
                 'recipe_pk': pk,
@@ -220,13 +216,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=True, permission_classes=(AllowAny,), url_path='get-link')
     def get_link(self, request, pk):
         """Получить короткую ссылку на рецепт."""
-        # url = short_url.encode_url(int(pk))
         url = 'https://{}/s/{}'.format(
             settings.ALLOWED_HOSTS[-1],
             short_url.encode_url(int(pk))
         )
-        print(request)
-
         return Response({'short-link': url})
 
     """Вот это место точно можно улушчить, но это потом"""
@@ -234,7 +227,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=True, permission_classes=(IsAuthenticated,))
     def shopping_cart(self, request, pk):
         """Action для списка покупок."""
-        return Response({'message': f'That MAIN shopping_cart action for {self}.'})
 
     @shopping_cart.mapping.post
     def add_into_cart(self, request, pk):
@@ -247,9 +239,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 'action': 'add_into_cart'})
         if serializer.is_valid():
             short_recipe = serializer.save(pk=pk)
-            # return Response({'message': 'Its all goor Gonna ADD.'})
             return Response(short_recipe.data, status=status.HTTP_201_CREATED)
-            # return Response(, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @shopping_cart.mapping.delete
