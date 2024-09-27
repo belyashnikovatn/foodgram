@@ -1,30 +1,28 @@
 import short_url
+
 from django.conf import settings
-from django.shortcuts import render
 from django.contrib.auth import get_user_model
-from rest_framework.pagination import LimitOffsetPagination
+from django.shortcuts import get_object_or_404, redirect
 from django_filters.rest_framework import DjangoFilterBackend
-from django.shortcuts import get_object_or_404
-from api.permissions import OwnerOnly
 from djoser.views import UserViewSet as UVS
-from rest_framework import mixins, viewsets, status
+from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.response import Response
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
+from rest_framework.response import Response
 
+from api.filters import IngredientFilter, RecipeFilter
+from api.permissions import OwnerOnly
 from api.serializers import (
-    # AvatarSerializer,
     FavoriteRecipeSerializer,
     IngredientSerializer,
     RecipeGetSerializer,
-    RecipeListSerializer,
     RecipePostSerializer,
     ShopRecipeSerializer,
     SubscriptionSerializer,
     TagSerializer,
     UserGetSerializer,
-    UserPostSerializer,
     UserSubscriptionsSerializer,
 )
 from recipes.models import (
@@ -35,28 +33,23 @@ from recipes.models import (
     Subscription,
     Tag
 )
-from api.filters import IngredientFilter, RecipeFilter
-from django.shortcuts import redirect
-
-
-from rest_framework.pagination import LimitOffsetPagination
 
 User = get_user_model()
 
 
-class RecipeLimitPage(LimitOffsetPagination):
-    limit_query_param = 'recipes_limit'
-
-
-
-
-
 def redirect_view(request, s):
+    """Redirect для короткой ссылки"""
     pk = short_url.decode_url(s)
     return redirect(f'/api/recipes/{pk}')
 
 
 class UserViewSet(UVS, viewsets.ViewSet):
+    """
+    Вьюсет для работы с пользователем:
+    регистрация, изменение, смена пароля -- djoser.
+    Дполнительно: профиль, смена аватара, список подписок,
+    создание/удаление подписки
+    """
     queryset = User.objects.all()
     pagination_class = LimitOffsetPagination
 
@@ -67,7 +60,8 @@ class UserViewSet(UVS, viewsets.ViewSet):
         serializer = UserGetSerializer(request.user)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
-    @action(detail=False, url_path=r'me/avatar', permission_classes=(IsAuthenticated,))
+    @action(detail=False, url_path=r'me/avatar',
+            permission_classes=(IsAuthenticated,))
     def avatar(self, request):
         """Action для аватара."""
         return Response({'message': f'That action MAIN for {request.user}.'})
@@ -149,6 +143,7 @@ class UserViewSet(UVS, viewsets.ViewSet):
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
+    """Для тегов"""
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     pagination_class = None
@@ -156,6 +151,7 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
+    """Для ингредиентов"""
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     pagination_class = None
@@ -166,11 +162,15 @@ class IngredientViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    """
+    Вьюсет для рецептов: все CRUD операции,
+    добавить/удалить в избранное/список покупок,
+    получить короткую ссылку,
+    скачать список покупок.
+    """
     queryset = Recipe.objects.all()
     permission_classes = (IsAuthenticatedOrReadOnly, OwnerOnly)
     pagination_class = LimitOffsetPagination
-    # pagination_class = PageLimitPagination
-    # pagination_class = RecipeLimitPage
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
