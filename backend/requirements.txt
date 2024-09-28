@@ -9,3 +9,7 @@ pytest-django==4.4.0
 pytest-pythonpath==0.7.3
 PyYAML==6.0
 python-dotenv
+gunicorn
+django-filter==23.1
+short_url
+python-dotenv
