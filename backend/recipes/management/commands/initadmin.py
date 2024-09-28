@@ -20,7 +20,7 @@ class Command(BaseCommand):
 
         if not User.objects.filter(username=username).exists():
             print('Создаю аккаунт для %s (%s)' % (username, email))
-            admin = User.objects.create_superuser(
+            User.objects.create_superuser(
                 email=email, username=username,
                 first_name=first_name,
                 last_name=last_name,
