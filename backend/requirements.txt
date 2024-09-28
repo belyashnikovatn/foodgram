@@ -12,3 +12,4 @@ python-dotenv
 gunicorn
 django-filter==23.1
 short_url
+python-dotenv
