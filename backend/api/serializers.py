@@ -114,25 +114,20 @@ class RecipeGetSerializer(serializers.ModelSerializer):
         )
         return ingredients
 
+    def get_is_recipe(self, obj, model):
+        if request := self.context.get('request'):
+            user = request.user
+            if user.is_anonymous:
+                return False
+            return model.objects.filter(
+                user=user, recipe=obj).exists()
+        return False
+
     def get_is_favorited(self, obj):
-        request = self.context.get('request')
-        if not request:
-            return False
-        user = request.user
-        if user.is_anonymous:
-            return False
-        return FavoriteRecipe.objects.filter(
-            user=user, recipe=obj).exists()
+        return self.get_is_recipe(obj, FavoriteRecipe)
 
     def get_is_in_shopping_cart(self, obj):
-        request = self.context.get('request')
-        if not request:
-            return False
-        user = request.user
-        if user.is_anonymous:
-            return False
-        return ShopRecipe.objects.filter(
-            user=user, recipe=obj).exists()
+        return self.get_is_recipe(obj, ShopRecipe)
 
 
 class RecipeIngredientSerializer(serializers.ModelSerializer):
@@ -178,17 +173,13 @@ class RecipePostSerializer(serializers.ModelSerializer):
         return data
 
     def validate_ingredients(self, data):
-        # if not data:
-        #     raise serializers.ValidationError('Ай яйяйяй!')
-        ingredients_list = [dict(item)['id'].id for item in data]
+        ingredients_list = [dict(item).get('id').id for item in data]
         ingredients_set = set(ingredients_list)
         if len(ingredients_list) != len(ingredients_set):
             raise serializers.ValidationError('Ать по рукам!')
         return data
 
     def validate_tags(self, data):
-        # if not data:
-        #     raise serializers.ValidationError('Ай яйяйяй!')
         tags_list = [item.id for item in data]
         tags_set = set(tags_list)
         if len(tags_list) != len(tags_set):
@@ -202,8 +193,8 @@ class RecipePostSerializer(serializers.ModelSerializer):
         for tag in tags:
             RecipeTag.objects.create(tag=tag, recipe=recipe)
         for ingredient in ingredients:
-            product = dict(ingredient)['id']
-            amount = dict(ingredient)['amount']
+            product = dict(ingredient).get('id')
+            amount = dict(ingredient).get('amount')
             RecipeIngredient.objects.create(
                 recipe=recipe,
                 ingredient=product,
@@ -231,7 +222,8 @@ class RecipePostSerializer(serializers.ModelSerializer):
             recipeingredient.ingredient_id for recipeingredient
             in old_ingredients]
         new_ingredients = validated_data.pop('ingredients')
-        new_ingredients_ids = [dict(item)['id'].id for item in new_ingredients]
+        new_ingredients_ids = [
+            dict(item).get('id').id for item in new_ingredients]
 
         # Удаляем те ингредиенты, которых нет в новых данных.
         for item in old_ingredients:
@@ -241,7 +233,7 @@ class RecipePostSerializer(serializers.ModelSerializer):
         # Добавляем те ингредиенты, которых нет в рецепте.
         # Обновляем количество тех, которые есть в рецепте.
         for item in new_ingredients:
-            product, amount = dict(item)['id'], dict(item)['amount']
+            product, amount = dict(item).get('id'), dict(item).get('amount')
             if product.id not in old_ingredients_products:
                 RecipeIngredient.objects.create(
                     recipe=recipe, ingredient=product, amount=amount)
@@ -269,58 +261,37 @@ class RecipeListSerializer(serializers.ModelSerializer):
         )
 
 
-class FavoriteRecipeSerializer(serializers.Serializer):
-    """ВОТ ЭТО ВОТ Я ЕЩЁ МОГУ ПЕРЕДЕЛАТЬ"""
+class UserRecepieSerializer(serializers.Serializer):
+    """
+    Общий сериализатор для обработки рецептов:
+    доблавение/удаление в избранное/лист покупок.
+    """
 
     def validate(self, data):
-        user = self.context['request'].user
-        recipe_id = self.context['recipe_pk']
-        action = self.context['action']
+        user = self.context.get('request').user
+        recipe_id = self.context.get('recipe_pk')
+        # действие: удалить или добавить
+        action = self.context.get('action')
+        # целевая модель добавления
+        model = self.context.get('model')
         recipe = get_object_or_404(Recipe, pk=recipe_id)
 
         if not recipe:
-            raise serializers.ValidationError('Ай яйяйяй!')
-        faverecipe = FavoriteRecipe.objects.filter(user=user, recipe=recipe)
-        if action == 'del_from_fav':
-            if not faverecipe:
-                raise serializers.ValidationError('Thete is noy that sjop ')
-        if action == 'add_into_fav':
-            if faverecipe:
-                raise serializers.ValidationError('Doulble trule ')
+            raise serializers.ValidationError('Такого рецепта нет')
+        userrecipe = model.objects.filter(user=user, recipe=recipe)
+        if action == 'del':
+            if not userrecipe:
+                raise serializers.ValidationError('Нечего удалять')
+        if action == 'add':
+            if userrecipe:
+                raise serializers.ValidationError('Такое уже есть')
         return data
 
     def create(self, validated_data):
-        recipe = get_object_or_404(Recipe, pk=validated_data['pk'])
-        FavoriteRecipe.objects.create(
-            user=self.context['request'].user,
-            recipe=recipe)
-        return RecipeListSerializer(recipe)
-
-
-class ShopRecipeSerializer(serializers.Serializer):
-    """И ОБЪЕДИНИТЬ ВОТ С ЭТИМ"""
-
-    def validate(self, data):
-        user = self.context['request'].user
-        recipe_id = self.context['recipe_pk']
-        action = self.context['action']
-        recipe = get_object_or_404(Recipe, pk=recipe_id)
-
-        if not recipe:
-            raise serializers.ValidationError('Ай яйяйяй!')
-        shoprecipe = ShopRecipe.objects.filter(user=user, recipe=recipe)
-        if action == 'del_from_cart':
-            if not shoprecipe:
-                raise serializers.ValidationError('Thete is noy that sjop ')
-        if action == 'add_into_cart':
-            if shoprecipe:
-                raise serializers.ValidationError('Doulble trule ')
-        return data
-
-    def create(self, validated_data):
+        model = self.context.get('model')
         recipe = get_object_or_404(Recipe, pk=validated_data.get('pk'))
-        ShopRecipe.objects.create(
-            user=self.context['request'].user,
+        model.objects.create(
+            user=self.context.get('request').user,
             recipe=recipe)
         return RecipeListSerializer(recipe)
 
@@ -363,7 +334,7 @@ class UserSubscriptionsSerializer(serializers.ModelSerializer):
     """Для отображения подписки: count_recepie и recipe"""
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
-    is_subscribed = serializers.SerializerMethodField()
+    is_subscribed = serializers.BooleanField(default=True)
 
     class Meta:
         model = User
@@ -378,9 +349,6 @@ class UserSubscriptionsSerializer(serializers.ModelSerializer):
             'recipes_count',
             'recipes',
         )
-
-    def get_is_subscribed(self, obj):
-        return True
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
