@@ -1,10 +1,4 @@
-Находясь в папке infra, выполните команду docker-compose up. При выполнении этой команды контейнер frontend, описанный в docker-compose.yml, подготовит файлы, необходимые для работы фронтенд-приложения, а затем прекратит свою работу.
-
-По адресу http://localhost изучите фронтенд веб-приложения, а по адресу http://localhost/api/docs/ — спецификацию API.
-
-
-
-![бейджик об удачно завершенном workflow](https://github.com/belyashnikovatn/kittygram_final/actions/workflows/main.yml/badge.svg)
+![бейджик об удачно завершенном workflow](https://github.com/belyashnikovatn/foodgram/actions/workflows/main.yml/badge.svg)
 
 # Проект 
 Цель проекта — закрепить теорию курса по модулям: 
@@ -25,7 +19,8 @@ Python + Django REST Framework + TokenAuthentication + JS + Docker + GitHub Acti
 
 
 ## Запуск проекта 
-### Локально:
+<details>
+<summary>Локально</summary>
 - $ git clone https://github.com/belyashnikovatn/foodgram.git 
 - $ cd frontend
 - $ npm i
@@ -38,78 +33,123 @@ Python + Django REST Framework + TokenAuthentication + JS + Docker + GitHub Acti
 - $ pip install -r requirements.txt
 - $ python manage.py migrate
 - $ python manage.py runserver
+</details>
 
-### Через docker руками:
+<details>
+<summary>Через docker руками</summary>
 - $ cd infra
 - docker compose up -d --build
+</details>
 
-Переменные окружения заложены в .env, используется библиотека load_dotenv. Список переменных:
-FOR INIT ADMIN
-- POSTGRES_DB
-- POSTGRES_USER
-- POSTGRES_PASSWORD
-- DB_HOST
-- DB_PORT
-- SECRET_KEY
-- DEBUG
-- ALLOWED_HOSTS  
+Переменные окружения заложены в .env, используется библиотека load_dotenv. 
+<details>
+<summary>Список переменных:</summary>
+Для подключения к СУБД postgres:  
+POSTGRES_DB=exmaple  
+POSTGRES_USER=exmaple  
+POSTGRES_PASSWORD=exmaple  
+DB_HOST=exmaple  
+DB_PORT=exmaple  
+
+Для настроек проекта:
+SECRET_KEY=exmaple  
+DEBUG=TrueOrAny  
+ALLOWED_HOSTS=domain,xxx.xxx.xxx.xxx  
+
+Для создания админа (функция initadmin):  
+username=username  
+email=username@gmail.com  
+first_name=first_name  
+last_name=last_name  
+password=password  
+</details>
+
 Для примера есть файл .env.example
 
 ## Задачи:
-### Планирование 
+
+<details>
+<summary> План </summary> 
 | Задача	| Статус | Результат |
 |:-------------|:-------------|:-------------|
-|Модель данных ERD|Выполнено|В ходе проектирования выяснилось, что нужно 5 связей N:M Ссылка на модель |
+|Модель данных ERD|Выполнено|---|
 |Определить приложения|Выполнено| 3 приложения: users, recepies, api |
 |Определить модель для пользователя|Выполнено| Поля пользователя не стандартные (+фото) -> заменяем модель User |
 |Создать проект и приложения|Выполнено| 3 приложения: users, recepies, api (именно в таком порядке зависимости) |
 |Настроить аутентификацию/авторизацию|Выполнено| --- |
-|Создать модели данных|В работе| Tag, Ingredient, User(наследовано от djoser.UserViewSet), Recipe (доделать 2 разных вью + авто авторство), Subscription |
+|Создать модели данных|Выполнено| ---|
 |Определить список функций для проектирования вьюсетов|Выполнено | Файл-таблица. Список вью: Users, Ingredi Tag Recipe |
-|Настроить админку стандарт|Очередь| --- |
-|Настроить админку классы |В работе| --- |
-|Локализация всего проекта |В работе| --- |
-|Создать сериализаторы|В работе| --- |
-|Создать вьюшки|Очередь| В работе |
-|Создать пермишены|Очередь| --- |
-|Подготовить тестовые данные для загрузки|Очередь| --- |
-|Доработать compose |Очередь| --- |
-|Создать прод compose|Очередь| --- |
-|Настроить CI/CD|Очередь| --- |
-|Вшить загрузку данных в CI/CD|Очередь| --- |
-|Вшить создание админа в CI/CD|Очередь| --- |
-|Фото по дефолту|Очередь| https://www.devhandbook.com/django/user-profile/ |
-|Имя|Очередь| --- |
-
-### Реализация
+|Настроить админку стандарт|Выполнено| --- |
+|Настроить админку расширено |В работе| --- |
+|Локализация всего проекта |Выполнено| --- |
+|Создать сериализаторы|Выполнено| --- |
+|Создать вьюшки|Выполнено| ---- |
+|Создать пермишены|Выполнено| --- |
+|Подготовить тестовые данные для загрузки|Выполнено| --- |
+|Доработать compose |Выполнено| --- |
+|Создать прод compose|Выполнено| --- |
+|Настроить CI/CD|Выполнено| --- |
+|Вшить загрузку данных в CI/CD|Выполнено| --- |
+|Вшить создание админа в CI/CD|Выполнено| --- |
+</details>
 
 
+### Проектирование и реализация 
+Для определения моделей и связей между ними была создана диаграмма "сущность-связь"
+<details>
+<summary>Диаграмма</summary>
+![foodgram_erd](https://github.com/belyashnikovatn/foodgram/blob/main/ERD_API_FOODGRAM.png)
+</details>  
+Для меня это всегда самая важная часть, потому что это основа структуры данных и взаимодействия.  
+
+После этого 
+
+
+
+
+Этапы проекта:  
+0. Проектирование, моделирование, рисование, планирование  
+1. Сделать всё очень просто (с повторами кода, без оптимизации), но главное, чтобы проходили тесты postman  
+2. Оптимизация: вынести общий код, удалить повторения и лишние переменные итд  
+3. Описать классы и функции, сложные места  
+4. Сделать develop docker compose, собрать образы, запушить на хаб  
+5. Сделать product docker compose, развернуть проект на сервере, настроить nginx  
+6. Прописать git workflow для CI/CD  
+7. Протестировать релиз, доделать баги, чтобы убедиться, что workflow рабочий  
+8. Документация  
+
+entrypoint 
+loaddata (дополнительно загружаются теги)
+initadmin
+collectstatic
 
 ### Настройка контейнеризации
-- Создан Dockerfile для 
-- Изменены настройки nginx для контейнера gateway
-- Изменён settings: env + database settings
-- Дописаны  docker-compose.yml и docker-compose.production.yml
+- Создан Dockerfile для backend, gateway, db 
+- Изменены настройки nginx для контейнера foodgram-proxy
+- Изменён settings: media + env + database settings
+- Созданы  docker-compose.yml и docker-compose.production.yml
 
 |Имя образа	|Название контейнера|Название volume|
 |:-------------:|:-------------:|:-------------:|
-|gateway|gateway|static, media| 
-|backend|backend|static, media| 
-|frontend|frontend|static|
-|postgres:13|db|pg_data|
+|postgres:13|foodgram-db|pg_data|
+|foodgram_backend|foodgram-back|static, media| 
+|foodgram_frontend|foodgram-front|static|
+|foodgram_gateway|foodgram-proxy|static, media| 
 
 ### Настройка CI/CD
 - Прописан workflow в main.yml:
     - проверка кода по PEP8 (push в любую ветку)
-    - запуск тестов для фронтенда и бэкенда (push в любую ветку)
     - сбор образов и push на докерхаб (push в main ветку)
     - обновление образов на сервере и перезапуск приложения (push в main ветку)
-    - сбор и перенос статики, применение миграций (на сервере)  (push в main ветку)
     - уведомление по Telegram 
 - Изменены настройки nginx на удалённом сервере
 
-Итоговая схема :  
-![Итоговая схема](https://github.com/belyashnikovatn/kittygram_final/blob/main/server_docker_taski_kittygram.png)  
+## Итоги
+Самым ценным в этом проекте для меня стало:
+- понимание, как проектировать сложные вьюсеты, так как до этого я использовала ModelViewSet или ReadOnlyModelViewSet без всяких дополнительных action 
+- понимание разделения зон ответственности и задач слоёв views и serializer  
+- понимание, что любую задачу можно решить каким-либо путём.  На некоторые задачи у меня уходило по 2-3 дня, казалось неразрешимым, но я читала, спрашивала, читала опять и находила решение.  
+
 
 ## Авторство
 [Беляшникова Таня](https://github.com/belyashnikovatn)
