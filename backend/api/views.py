@@ -1,5 +1,6 @@
 import short_url
 
+from django.http import HttpResponse
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404, redirect
@@ -28,6 +29,7 @@ from recipes.models import (
     FavoriteRecipe,
     Ingredient,
     Recipe,
+    RecipeIngredient,
     ShopRecipe,
     Subscription,
     Tag
@@ -266,4 +268,25 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=False, permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request):
         """Скачать список покупок."""
-        return Response({'message': 'download_shopping_cart.'})
+        user = request.user
+        if user.is_anonymous:
+            return Response({'message': 'анониму анонимный список'})
+
+        recipes_ids = [item.recipe.id for item in user.shops.all()]
+        recipe_ingredients = RecipeIngredient.objects.filter(
+            recipe_id__in=recipes_ids)
+        ingredients = {}
+        for recipe_ingredient in recipe_ingredients:
+            ingredients.setdefault(
+                recipe_ingredient.ingredient, []
+            ).append(recipe_ingredient.amount)
+        text, count = '', 0
+        for item in ingredients:
+            count += 1
+            text += (
+                f'{count}. {item.name} - '
+                f'{sum(ingredients[item])} '
+                f'{item.measurement_unit} \n')
+        response = HttpResponse(text, content_type='text/plain; charset=UTF-8')
+        response['Content-Disposition'] = 'attachment; filename="shops.txt"'
+        return response
