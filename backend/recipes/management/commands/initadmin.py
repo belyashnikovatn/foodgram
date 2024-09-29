@@ -1,3 +1,4 @@
+import logging
 import os
 from dotenv import load_dotenv
 
@@ -7,8 +8,14 @@ from django.core.management.base import BaseCommand
 load_dotenv()
 User = get_user_model()
 
+logging.basicConfig(
+    format='%(asctime)s - %(funcName)s - %(levelname)s - %(message)s',
+    level=logging.INFO,
+)
+
 
 class Command(BaseCommand):
+    help = 'Создаёт админа по данным из env файла.'
 
     def handle(self, *args, **options):
 
@@ -19,11 +26,15 @@ class Command(BaseCommand):
         password = os.getenv('password', '12345678')
 
         if not User.objects.filter(username=username).exists():
-            print('Создаю аккаунт для %s (%s)' % (username, email))
-            User.objects.create_superuser(
-                email=email, username=username,
-                first_name=first_name,
-                last_name=last_name,
-                password=password)
+            logging.info('Создаю аккаунт для %s (%s)' % (username, email))
+            try:
+                User.objects.create_superuser(
+                    email=email, username=username,
+                    first_name=first_name,
+                    last_name=last_name,
+                    password=password)
+                logging.info('Админ успешно создан.')
+            except Exception as error:
+                logging.error(f'Ошибка {error}!')
         else:
-            print('Админ уже создан.')
+            logging.info('Админ уже создан.')
