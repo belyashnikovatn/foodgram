@@ -15,14 +15,13 @@ from rest_framework.response import Response
 from api.filters import IngredientFilter, RecipeFilter
 from api.permissions import OwnerOnly
 from api.serializers import (
-    FavoriteRecipeSerializer,
     IngredientSerializer,
     RecipeGetSerializer,
     RecipePostSerializer,
-    ShopRecipeSerializer,
     SubscriptionSerializer,
     TagSerializer,
     UserGetSerializer,
+    UserRecepieSerializer,
     UserSubscriptionsSerializer,
 )
 from recipes.models import (
@@ -75,7 +74,7 @@ class UserViewSet(UVS):
             context={'request': request})
         if serializer.is_valid():
             serializer.save()
-            return Response({'avatar': serializer.data['avatar']})
+            return Response({'avatar': serializer.data.get('avatar')})
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @avatar.mapping.delete
@@ -183,14 +182,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @favorite.mapping.post
     def add_into_fav(self, request, pk):
         """Добавить рецепт в избранное."""
-        serializer = FavoriteRecipeSerializer(
+        serializer = UserRecepieSerializer(
             data=request.data,
             #  передаём контекст для валидации
             context={
                 'request': request,
                 'recipe_pk': pk,
-                'action': 'add_into_fav'})
+                'action': 'add',
+                'model': FavoriteRecipe})
         if serializer.is_valid():
+            # short_recipe = serializer.save(pk=pk)
             short_recipe = serializer.save(pk=pk)
             return Response(short_recipe.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -198,13 +199,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @favorite.mapping.delete
     def del_from_fav(self, request, pk):
         """Удалить рецепт из избранного."""
-        serializer = FavoriteRecipeSerializer(
+        serializer = UserRecepieSerializer(
             data=request.data,
             #  передаём контекст для валидации
             context={
                 'request': request,
                 'recipe_pk': pk,
-                'action': 'del_from_fav'})
+                'action': 'del',
+                'model': FavoriteRecipe})
         if serializer.is_valid():
             get_object_or_404(
                 FavoriteRecipe,
@@ -217,12 +219,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_link(self, request, pk):
         """Получить короткую ссылку на рецепт."""
         url = 'https://{}/s/{}'.format(
-            settings.ALLOWED_HOSTS[-1],
+            settings.ALLOWED_HOSTS[0],
             short_url.encode_url(int(pk))
         )
         return Response({'short-link': url})
-
-    """Вот это место точно можно улушчить, но это потом"""
 
     @action(detail=True, permission_classes=(IsAuthenticated,))
     def shopping_cart(self, request, pk):
@@ -231,12 +231,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @shopping_cart.mapping.post
     def add_into_cart(self, request, pk):
         """Добавить рецепт в список покупок."""
-        serializer = ShopRecipeSerializer(
+        serializer = UserRecepieSerializer(
             data=request.data,
+            #  передаём контекст для валидации
             context={
                 'request': request,
                 'recipe_pk': pk,
-                'action': 'add_into_cart'})
+                'action': 'add',
+                'model': ShopRecipe})
         if serializer.is_valid():
             short_recipe = serializer.save(pk=pk)
             return Response(short_recipe.data, status=status.HTTP_201_CREATED)
@@ -245,12 +247,14 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @shopping_cart.mapping.delete
     def del_from_cart(self, request, pk):
         """Удалить рецепт из списка покупок."""
-        serializer = ShopRecipeSerializer(
+        serializer = UserRecepieSerializer(
             data=request.data,
+            #  передаём контекст для валидации
             context={
                 'request': request,
                 'recipe_pk': pk,
-                'action': 'del_from_cart'})
+                'action': 'del',
+                'model': ShopRecipe})
         if serializer.is_valid():
             get_object_or_404(
                 ShopRecipe,
