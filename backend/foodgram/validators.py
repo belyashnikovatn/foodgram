@@ -2,8 +2,8 @@ from django.core.exceptions import ValidationError
 
 from foodgram.constants import (
     MAX_AMOUNT,
-    MIN_AMOUNT,
     MAX_COOKING,
+    MIN_AMOUNT,
     MIN_COOKING,
 )
 

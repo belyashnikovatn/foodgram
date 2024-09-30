@@ -7,6 +7,12 @@ from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from rest_framework import serializers
 
+from foodgram.constants import (
+    MAX_AMOUNT,
+    MAX_COOKING,
+    MIN_AMOUNT,
+    MIN_COOKING
+)
 from recipes.models import (
     FavoriteRecipe,
     Ingredient,
@@ -133,7 +139,10 @@ class RecipeGetSerializer(serializers.ModelSerializer):
 class RecipeIngredientSerializer(serializers.ModelSerializer):
     """Ингредиент в рецепте -- используется при создании"""
     id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
-    amount = serializers.IntegerField(write_only=True, min_value=1)
+    amount = serializers.IntegerField(
+        write_only=True,
+        min_value=MIN_AMOUNT,
+        max_value=MAX_AMOUNT)
 
     class Meta:
         model = RecipeIngredient
@@ -158,6 +167,8 @@ class RecipePostSerializer(serializers.ModelSerializer):
         default=serializers.CurrentUserDefault())
     image = Base64ImageField(required=True, allow_null=False)
     name = serializers.CharField(required=True, max_length=256)
+    cooking_time = serializers.IntegerField(
+        max_value=MAX_COOKING, min_value=MIN_COOKING)
 
     class Meta:
         model = Recipe
@@ -268,7 +279,7 @@ class UserRecepieSerializer(serializers.Serializer):
     """
 
     def validate(self, data):
-        user = self.context.get('request').user
+        user = self.context['request'].user
         recipe_id = self.context.get('recipe_pk')
         # действие: удалить или добавить
         action = self.context.get('action')
@@ -291,7 +302,7 @@ class UserRecepieSerializer(serializers.Serializer):
         model = self.context.get('model')
         recipe = get_object_or_404(Recipe, pk=validated_data.get('pk'))
         model.objects.create(
-            user=self.context.get('request').user,
+            user=self.context['request'].user,
             recipe=recipe)
         return RecipeListSerializer(recipe)
 
@@ -300,7 +311,7 @@ class SubscriptionSerializer(serializers.Serializer):
     """Для валидации и создания подписки"""
 
     def validate(self, data):
-        user = self.context.get('request').user
+        user = self.context['request'].user
         subs_id = self.context.get('user_pk')
         action = self.context.get('action')
 
@@ -323,7 +334,7 @@ class SubscriptionSerializer(serializers.Serializer):
         limit_param = self.context.get('limit_param')
         subs = get_object_or_404(User, pk=validated_data.get('pk'))
         Subscription.objects.create(
-            user=self.context.get('request').user,
+            user=self.context['request'].user,
             cooker=subs)
         return UserSubscriptionsSerializer(
             subs,
