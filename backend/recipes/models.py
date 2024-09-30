@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 
 from foodgram.constants import SLICE_LENGTH
-from foodgram.validators import real_time
+from foodgram.validators import real_amount, real_time
 
 User = get_user_model()
 
@@ -42,7 +42,7 @@ class Recipe(models.Model):
 
     name = models.CharField('Название', max_length=256)
     text = models.TextField('Описание')
-    cooking_time = models.IntegerField(
+    cooking_time = models.PositiveSmallIntegerField(
         'Время приготовления (в минутах)',
         validators=(real_time,),
     )
@@ -92,6 +92,7 @@ class RecipeTag(models.Model):
         verbose_name='Тег')
 
     class Meta:
+        ordering = ('recipe', 'tag')
         verbose_name = 'тэг для рецепта'
         verbose_name_plural = 'Тэги для рецепта'
         constraints = [
@@ -114,9 +115,13 @@ class RecipeIngredient(models.Model):
     ingredient = models.ForeignKey(
         Ingredient, on_delete=models.CASCADE,
         verbose_name='Ингредиент')
-    amount = models.IntegerField('Количество в рецепте')
+    amount = models.PositiveSmallIntegerField(
+        'Количество в рецепте',
+        validators=(real_amount,),
+    )
 
     class Meta:
+        ordering = ('recipe', 'ingredient')
         verbose_name = 'ингредиент в рецепте'
         verbose_name_plural = 'Ингредиенты в рецепте'
         constraints = [
