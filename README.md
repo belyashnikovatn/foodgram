@@ -191,7 +191,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 |Имя образа	|Название контейнера|Название volume|
 |:-------------:|:-------------:|:-------------:|
-|postgres:13|foodgram-db|pg_data|
+|postgres:13|foodgram-db|pg|
 |foodgram_backend|foodgram-back|static, media| 
 |foodgram_frontend|foodgram-front|static|
 |foodgram_gateway|foodgram-proxy|static, media| 
