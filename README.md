@@ -16,7 +16,7 @@
 - [Авторство](#авторство)
 
 ## Технологии:
-Python + Django REST Framework + TokenAuthentication + JS + Docker + GitHub Actions
+Python + Django REST Framework + TokenAuthentication + JS + Docker + GitHub Actions  
 Подключение БД зависит от флага DEBUG:
 - True (тестовый режим) — SQLite
 - False (продакшн) — PostgreSQL
@@ -25,10 +25,12 @@ Python + Django REST Framework + TokenAuthentication + JS + Docker + GitHub Acti
 ## Запуск проекта 
 <details>
 <summary>Локально</summary>
+ 
 - $ git clone https://github.com/belyashnikovatn/foodgram.git 
 - $ cd frontend
 - $ npm i
 - $ npm run start
+  
 В другом терминале:
 - $ cd backend
 - $ python -m venv venv
@@ -41,6 +43,7 @@ Python + Django REST Framework + TokenAuthentication + JS + Docker + GitHub Acti
 
 <details>
 <summary>Через docker</summary>
+ 
 - $ cd infra
 - docker compose up -d --build
 </details>
@@ -48,7 +51,8 @@ Python + Django REST Framework + TokenAuthentication + JS + Docker + GitHub Acti
 <br/>
 Переменные окружения заложены в .env, используется библиотека load_dotenv. 
 <details>
-<summary>Список переменных:</summary>
+ <summary>Список переменных:</summary>
+
 Для подключения к СУБД postgres:  
 POSTGRES_DB=exmaple  
 POSTGRES_USER=exmaple  
@@ -56,7 +60,7 @@ POSTGRES_PASSWORD=exmaple
 DB_HOST=exmaple  
 DB_PORT=exmaple  
 
-Для настроек проекта:
+Для настроек проекта:  
 SECRET_KEY=exmaple  
 DEBUG=TrueOrAny  
 ALLOWED_HOSTS=domain,xxx.xxx.xxx.xxx  
