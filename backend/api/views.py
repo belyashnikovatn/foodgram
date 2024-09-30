@@ -14,7 +14,6 @@ from rest_framework.permissions import (AllowAny, IsAuthenticated,
 from rest_framework.response import Response
 
 from api.filters import IngredientFilter, RecipeFilter
-from api.paginators import LimitPageNumberPaginator
 from api.permissions import OwnerOnly
 from api.serializers import (
     IngredientSerializer,
@@ -169,7 +168,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     """
     queryset = Recipe.objects.all()
     permission_classes = (IsAuthenticatedOrReadOnly, OwnerOnly)
-    pagination_class = LimitPageNumberPaginator
+    pagination_class = LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
