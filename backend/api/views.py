@@ -74,10 +74,9 @@ class UserViewSet(UVS):
         serializer = UserGetSerializer(
             user, data=request.data, partial=True,
             context={'request': request})
-        if serializer.is_valid():
-            serializer.save()
-            return Response({'avatar': serializer.data.get('avatar')})
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({'avatar': serializer.data.get('avatar')})
 
     @avatar.mapping.delete
     def delete_avatar(self, request):
@@ -117,10 +116,9 @@ class UserViewSet(UVS):
                 'user_pk': id,
                 'limit_param': limit_param,
                 'action': 'create_subs'})
-        if serializer.is_valid():
-            subs = serializer.save(pk=id)
-            return Response(subs.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        subs = serializer.save(pk=id)
+        return Response(subs.data, status=status.HTTP_201_CREATED)
 
     @subscribe.mapping.delete
     def delete_subs(self, request, id):
@@ -132,13 +130,12 @@ class UserViewSet(UVS):
                 'request': request,
                 'user_pk': id,
                 'action': 'delete_subs'})
-        if serializer.is_valid():
-            get_object_or_404(
-                Subscription,
-                user=self.request.user,
-                cooker=get_object_or_404(User, pk=id)).delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        get_object_or_404(
+            Subscription,
+            user=self.request.user,
+            cooker=get_object_or_404(User, pk=id)).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
@@ -191,11 +188,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 'recipe_pk': pk,
                 'action': 'add',
                 'model': FavoriteRecipe})
-        if serializer.is_valid():
-            # short_recipe = serializer.save(pk=pk)
-            short_recipe = serializer.save(pk=pk)
-            return Response(short_recipe.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        short_recipe = serializer.save(pk=pk)
+        return Response(short_recipe.data, status=status.HTTP_201_CREATED)
 
     @favorite.mapping.delete
     def del_from_fav(self, request, pk):
@@ -208,13 +203,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 'recipe_pk': pk,
                 'action': 'del',
                 'model': FavoriteRecipe})
-        if serializer.is_valid():
-            get_object_or_404(
-                FavoriteRecipe,
-                user=self.request.user,
-                recipe=get_object_or_404(Recipe, pk=pk)).delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        get_object_or_404(
+            FavoriteRecipe,
+            user=self.request.user,
+            recipe=get_object_or_404(Recipe, pk=pk)).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, permission_classes=(AllowAny,), url_path='get-link')
     def get_link(self, request, pk):
@@ -240,10 +234,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 'recipe_pk': pk,
                 'action': 'add',
                 'model': ShopRecipe})
-        if serializer.is_valid():
-            short_recipe = serializer.save(pk=pk)
-            return Response(short_recipe.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        short_recipe = serializer.save(pk=pk)
+        return Response(short_recipe.data, status=status.HTTP_201_CREATED)
 
     @shopping_cart.mapping.delete
     def del_from_cart(self, request, pk):
@@ -256,13 +249,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 'recipe_pk': pk,
                 'action': 'del',
                 'model': ShopRecipe})
-        if serializer.is_valid():
-            get_object_or_404(
-                ShopRecipe,
-                user=self.request.user,
-                recipe=get_object_or_404(Recipe, pk=pk)).delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        serializer.is_valid(raise_exception=True)
+        get_object_or_404(
+            ShopRecipe,
+            user=self.request.user,
+            recipe=get_object_or_404(Recipe, pk=pk)).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request):
