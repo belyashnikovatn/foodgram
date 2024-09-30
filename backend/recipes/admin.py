@@ -28,6 +28,7 @@ class DisplayModelAdmin(admin.ModelAdmin):
 @admin.register(User)
 class UserAdmin(DisplayModelAdmin):
     """Admin users."""
+    search_fields = ('name', 'email')
 
 
 @admin.register(Subscription)
@@ -43,6 +44,7 @@ class TagAdmin(DisplayModelAdmin):
 @admin.register(Ingredient)
 class IngredientAdmin(DisplayModelAdmin):
     """Admin ingredients."""
+    search_fields = ('name',)
 
 
 class TagInline(admin.TabularInline):
@@ -60,6 +62,13 @@ class RecipeAdmin(admin.ModelAdmin):
         TagInline,
         IngredientInline,
     ]
+    list_display = ('name', 'author', 'favorites_count')
+    search_fields = ('name',)
+    list_filter = ('name', 'author', 'tags')
+    exclude = ('ingredients',)
+
+    def favorites_count(self, obj):
+        return obj.followers.count()
 
 
 @admin.register(ShopRecipe)
