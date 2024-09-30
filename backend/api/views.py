@@ -8,12 +8,12 @@ from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as UVS
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 
 from api.filters import IngredientFilter, RecipeFilter
+from api.paginators import LimitPageNumberPaginator
 from api.permissions import OwnerOnly
 from api.serializers import (
     IngredientSerializer,
@@ -52,7 +52,7 @@ class UserViewSet(UVS):
     создание/удаление подписки
     """
     queryset = User.objects.all()
-    pagination_class = LimitOffsetPagination
+    pagination_class = LimitPageNumberPaginator
 
     @action(detail=False, methods=('get',),
             permission_classes=(IsAuthenticated,))
@@ -168,7 +168,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     """
     queryset = Recipe.objects.all()
     permission_classes = (IsAuthenticatedOrReadOnly, OwnerOnly)
-    pagination_class = LimitOffsetPagination
+    pagination_class = LimitPageNumberPaginator
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
