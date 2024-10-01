@@ -68,7 +68,7 @@ class RecipeAdmin(admin.ModelAdmin):
     exclude = ('ingredients',)
 
     def favorites_count(self, obj):
-        return obj.followers.count()
+        return obj.liked.count()
 
 
 @admin.register(ShopRecipe)
