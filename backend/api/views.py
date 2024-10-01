@@ -87,8 +87,7 @@ class UserViewSet(UVS):
     @action(detail=False, permission_classes=(IsAuthenticated,))
     def subscriptions(self, request):
         """Список подписок."""
-        user = get_object_or_404(User, pk=request.user.id)
-        users = [user.cooker for user in user.following.all()]
+        users = User.objects.filter(followers__user=request.user)
         limit_param = request.query_params.get('recipes_limit')
         paginated_queryset = self.paginate_queryset(users)
         serializer = UserSubscriptionsSerializer(
@@ -263,10 +262,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         user = request.user
         if user.is_anonymous:
             return Response({'message': 'анониму анонимный список'})
-
-        recipes_ids = [item.recipe.id for item in user.shops.all()]
         recipe_ingredients = RecipeIngredient.objects.filter(
-            recipe_id__in=recipes_ids)
+            recipe_id__in=user.shops.values('id'))
         ingredients = {}
         for recipe_ingredient in recipe_ingredients:
             ingredients.setdefault(
