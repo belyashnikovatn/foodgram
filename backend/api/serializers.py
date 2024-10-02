@@ -64,7 +64,7 @@ class UserGetSerializer(UserSerializer):
     def validate(self, data):
         """Фото не пустое?"""
         if request := self.context.get('request'):
-            if request.method == 'PUT' and len(data) == 0:
+            if request.method == 'PUT' and not data:
                 raise serializers.ValidationError('Выберите фото')
         return data
 
@@ -179,22 +179,25 @@ class RecipePostSerializer(serializers.ModelSerializer):
             'author')
 
     def validate(self, data):
-        if 'tags' not in data or 'ingredients' not in data:
+        if 'tags' not in data:
             raise serializers.ValidationError(
-                'Рецепт не может быть без тегов или ингредиентов')
+                'Рецепт не может быть без тегов')
+        if 'ingredients' not in data:
+            raise serializers.ValidationError(
+                'Рецепт не может быть без ингредиентов')
         return data
 
     def validate_ingredients(self, data):
-        ingredients_list = [dict(item).get('id').id for item in data]
-        if len(ingredients_list) != len({*ingredients_list}):
-            raise serializers.ValidationError('Ать по рукам!')
+        ingredients_list = [item['id'].id for item in data]
+        if len(ingredients_list) != len(set(ingredients_list)):
+            raise serializers.ValidationError('Повтор ингредиентов')
         get_list_or_404(Ingredient, id__in=ingredients_list)
         return data
 
     def validate_tags(self, data):
         tags_list = [item.id for item in data]
-        if len(tags_list) != len({*tags_list}):
-            raise serializers.ValidationError('Ать по рукам!')
+        if len(tags_list) != len(set(tags_list)):
+            raise serializers.ValidationError('Повтор тегов')
         get_list_or_404(Tag, id__in=tags_list)
         return data
 
