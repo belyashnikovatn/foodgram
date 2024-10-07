@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.core.management.base import BaseCommand
 
 from foodgram.settings import CSV_FILES_DIR
-from recipes.models import Ingredient, Recipe, Tag
+from recipes.models import Ingredient, Tag
 
 User = get_user_model()
 
