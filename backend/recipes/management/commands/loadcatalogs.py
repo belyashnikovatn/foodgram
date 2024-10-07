@@ -41,8 +41,7 @@ class Command(BaseCommand):
     help = 'Загружает данные из csv-файлов в models по конкретным полям.'
 
     def handle(self, *args, **options):
-        """Загружает из файлов в модели по полям."""
-
+        # файл, модель, поля для загрузки через запятую
         models = [
             ('tags.csv', Tag, 'name', 'slug'),
             ('ingredients.csv', Ingredient, 'name', 'measurement_unit'),
@@ -50,7 +49,7 @@ class Command(BaseCommand):
                 'users.csv', User,
                 'username', 'email',
                 'first_name', 'last_name',
-                'password', 'avatar')
+                'password', 'avatar'),
         ]
 
         [load(*item) for item in models]

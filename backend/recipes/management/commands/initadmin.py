@@ -24,7 +24,7 @@ class Command(BaseCommand):
         first_name = os.getenv('first_name', 'Tania')
         last_name = os.getenv('last_name', 'B')
         password = os.getenv('password', '12345678')
-        avatar = 'profiles/duck.png'
+        avatar = 'profiles/admin.png'
 
         if not User.objects.filter(username=username).exists():
             logging.info('Создаю аккаунт для %s (%s)' % (username, email))

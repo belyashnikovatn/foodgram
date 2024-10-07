@@ -1,0 +1,453 @@
+[
+{
+  "model": "recipes.recipe",
+  "pk": 1,
+  "fields": {
+    "name": "английский завтрак",
+    "text": "почувствуй себя британской королевой",
+    "cooking_time": 20,
+    "image": "recipes/english_breakfast.jpg",
+    "author": 2,
+    "pub_date": "2024-10-07T06:20:19.843Z"
+  }
+},
+{
+  "model": "recipes.recipe",
+  "pk": 2,
+  "fields": {
+    "name": "шоколадик горяченький",
+    "text": "так вкусно, что кружку вывернешь и оближешь\r\nкороче, конфеты в кружку закидываешь, в микроволновку и готовченко",
+    "cooking_time": 5,
+    "image": "recipes/chocolat.png",
+    "author": 3,
+    "pub_date": "2024-10-07T06:21:26.857Z"
+  }
+},
+{
+  "model": "recipes.recipe",
+  "pk": 3,
+  "fields": {
+    "name": "ростбиф",
+    "text": "запеки и съешь его полностью",
+    "cooking_time": 45,
+    "image": "recipes/rostbeef.jpg",
+    "author": 2,
+    "pub_date": "2024-10-07T06:22:22.440Z"
+  }
+},
+{
+  "model": "recipes.recipe",
+  "pk": 4,
+  "fields": {
+    "name": "кисель из ревеня",
+    "text": "...самое лучшее на свете из всего, что я знаю. Кроме киселя из ревеня.",
+    "cooking_time": 20,
+    "image": "recipes/rhubarb.jpg",
+    "author": 4,
+    "pub_date": "2024-10-07T06:24:03.118Z"
+  }
+},
+{
+  "model": "recipes.recipe",
+  "pk": 5,
+  "fields": {
+    "name": "макарошки да по-флотски",
+    "text": "сытно, вкусно, хорошо",
+    "cooking_time": 25,
+    "image": "recipes/makaroni.jpg",
+    "author": 3,
+    "pub_date": "2024-10-07T06:25:43.846Z"
+  }
+},
+{
+  "model": "recipes.recipe",
+  "pk": 6,
+  "fields": {
+    "name": "блинчики",
+    "text": "Скорей сковороду на печь!\r\nБлины мы будем печь.",
+    "cooking_time": 30,
+    "image": "recipes/pancake.jpg",
+    "author": 4,
+    "pub_date": "2024-10-07T06:27:41.381Z"
+  }
+},
+{
+  "model": "recipes.recipe",
+  "pk": 7,
+  "fields": {
+    "name": "бутер",
+    "text": "одно на другое, то да сё, и ешь",
+    "cooking_time": 1,
+    "image": "recipes/sandwich.jpg",
+    "author": 3,
+    "pub_date": "2024-10-07T06:28:41.441Z"
+  }
+},
+{
+  "model": "recipes.recipetag",
+  "pk": 1,
+  "fields": {
+    "recipe": 1,
+    "tag": 1
+  }
+},
+{
+  "model": "recipes.recipetag",
+  "pk": 2,
+  "fields": {
+    "recipe": 1,
+    "tag": 2
+  }
+},
+{
+  "model": "recipes.recipetag",
+  "pk": 3,
+  "fields": {
+    "recipe": 2,
+    "tag": 4
+  }
+},
+{
+  "model": "recipes.recipetag",
+  "pk": 4,
+  "fields": {
+    "recipe": 2,
+    "tag": 6
+  }
+},
+{
+  "model": "recipes.recipetag",
+  "pk": 5,
+  "fields": {
+    "recipe": 2,
+    "tag": 7
+  }
+},
+{
+  "model": "recipes.recipetag",
+  "pk": 6,
+  "fields": {
+    "recipe": 3,
+    "tag": 3
+  }
+},
+{
+  "model": "recipes.recipetag",
+  "pk": 7,
+  "fields": {
+    "recipe": 3,
+    "tag": 5
+  }
+},
+{
+  "model": "recipes.recipetag",
+  "pk": 8,
+  "fields": {
+    "recipe": 4,
+    "tag": 6
+  }
+},
+{
+  "model": "recipes.recipetag",
+  "pk": 9,
+  "fields": {
+    "recipe": 5,
+    "tag": 2
+  }
+},
+{
+  "model": "recipes.recipetag",
+  "pk": 10,
+  "fields": {
+    "recipe": 5,
+    "tag": 3
+  }
+},
+{
+  "model": "recipes.recipetag",
+  "pk": 11,
+  "fields": {
+    "recipe": 5,
+    "tag": 5
+  }
+},
+{
+  "model": "recipes.recipetag",
+  "pk": 12,
+  "fields": {
+    "recipe": 6,
+    "tag": 1
+  }
+},
+{
+  "model": "recipes.recipetag",
+  "pk": 13,
+  "fields": {
+    "recipe": 6,
+    "tag": 3
+  }
+},
+{
+  "model": "recipes.recipetag",
+  "pk": 14,
+  "fields": {
+    "recipe": 6,
+    "tag": 7
+  }
+},
+{
+  "model": "recipes.recipetag",
+  "pk": 15,
+  "fields": {
+    "recipe": 7,
+    "tag": 1
+  }
+},
+{
+  "model": "recipes.recipetag",
+  "pk": 16,
+  "fields": {
+    "recipe": 7,
+    "tag": 2
+  }
+},
+{
+  "model": "recipes.recipetag",
+  "pk": 17,
+  "fields": {
+    "recipe": 7,
+    "tag": 3
+  }
+},
+{
+  "model": "recipes.recipetag",
+  "pk": 18,
+  "fields": {
+    "recipe": 7,
+    "tag": 4
+  }
+},
+{
+  "model": "recipes.recipetag",
+  "pk": 19,
+  "fields": {
+    "recipe": 7,
+    "tag": 5
+  }
+},
+{
+  "model": "recipes.recipetag",
+  "pk": 20,
+  "fields": {
+    "recipe": 7,
+    "tag": 7
+  }
+},
+{
+  "model": "recipes.recipeingredient",
+  "pk": 1,
+  "fields": {
+    "recipe": 1,
+    "ingredient": 2181,
+    "amount": 150
+  }
+},
+{
+  "model": "recipes.recipeingredient",
+  "pk": 2,
+  "fields": {
+    "recipe": 1,
+    "ingredient": 122,
+    "amount": 30
+  }
+},
+{
+  "model": "recipes.recipeingredient",
+  "pk": 3,
+  "fields": {
+    "recipe": 1,
+    "ingredient": 1689,
+    "amount": 30
+  }
+},
+{
+  "model": "recipes.recipeingredient",
+  "pk": 4,
+  "fields": {
+    "recipe": 1,
+    "ingredient": 1341,
+    "amount": 30
+  }
+},
+{
+  "model": "recipes.recipeingredient",
+  "pk": 5,
+  "fields": {
+    "recipe": 1,
+    "ingredient": 1925,
+    "amount": 20
+  }
+},
+{
+  "model": "recipes.recipeingredient",
+  "pk": 6,
+  "fields": {
+    "recipe": 1,
+    "ingredient": 2081,
+    "amount": 20
+  }
+},
+{
+  "model": "recipes.recipeingredient",
+  "pk": 7,
+  "fields": {
+    "recipe": 2,
+    "ingredient": 670,
+    "amount": 150
+  }
+},
+{
+  "model": "recipes.recipeingredient",
+  "pk": 8,
+  "fields": {
+    "recipe": 3,
+    "ingredient": 278,
+    "amount": 1000
+  }
+},
+{
+  "model": "recipes.recipeingredient",
+  "pk": 9,
+  "fields": {
+    "recipe": 3,
+    "ingredient": 1724,
+    "amount": 15
+  }
+},
+{
+  "model": "recipes.recipeingredient",
+  "pk": 10,
+  "fields": {
+    "recipe": 4,
+    "ingredient": 1424,
+    "amount": 250
+  }
+},
+{
+  "model": "recipes.recipeingredient",
+  "pk": 11,
+  "fields": {
+    "recipe": 4,
+    "ingredient": 1546,
+    "amount": 50
+  }
+},
+{
+  "model": "recipes.recipeingredient",
+  "pk": 12,
+  "fields": {
+    "recipe": 4,
+    "ingredient": 252,
+    "amount": 150
+  }
+},
+{
+  "model": "recipes.recipeingredient",
+  "pk": 13,
+  "fields": {
+    "recipe": 4,
+    "ingredient": 726,
+    "amount": 15
+  }
+},
+{
+  "model": "recipes.recipeingredient",
+  "pk": 14,
+  "fields": {
+    "recipe": 5,
+    "ingredient": 914,
+    "amount": 200
+  }
+},
+{
+  "model": "recipes.recipeingredient",
+  "pk": 15,
+  "fields": {
+    "recipe": 5,
+    "ingredient": 1881,
+    "amount": 200
+  }
+},
+{
+  "model": "recipes.recipeingredient",
+  "pk": 16,
+  "fields": {
+    "recipe": 6,
+    "ingredient": 2181,
+    "amount": 150
+  }
+},
+{
+  "model": "recipes.recipeingredient",
+  "pk": 17,
+  "fields": {
+    "recipe": 6,
+    "ingredient": 1081,
+    "amount": 240
+  }
+},
+{
+  "model": "recipes.recipeingredient",
+  "pk": 18,
+  "fields": {
+    "recipe": 6,
+    "ingredient": 1032,
+    "amount": 600
+  }
+},
+{
+  "model": "recipes.recipeingredient",
+  "pk": 19,
+  "fields": {
+    "recipe": 6,
+    "ingredient": 1546,
+    "amount": 20
+  }
+},
+{
+  "model": "recipes.recipeingredient",
+  "pk": 20,
+  "fields": {
+    "recipe": 6,
+    "ingredient": 1684,
+    "amount": 5
+  }
+},
+{
+  "model": "recipes.recipeingredient",
+  "pk": 21,
+  "fields": {
+    "recipe": 6,
+    "ingredient": 1646,
+    "amount": 30
+  }
+},
+{
+  "model": "recipes.recipeingredient",
+  "pk": 22,
+  "fields": {
+    "recipe": 7,
+    "ingredient": 654,
+    "amount": 15
+  }
+},
+{
+  "model": "recipes.recipeingredient",
+  "pk": 23,
+  "fields": {
+    "recipe": 7,
+    "ingredient": 1988,
+    "amount": 15
+  }
+}
+]
