@@ -8,8 +8,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet as UVS
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
-from rest_framework.permissions import (AllowAny, IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
+from rest_framework.permissions import (AllowAny, IsAuthenticated,)
 from rest_framework.response import Response
 
 from api.filters import IngredientFilter, RecipeFilter
@@ -163,10 +162,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
     скачать список покупок.
     """
     queryset = Recipe.objects.all()
-    permission_classes = (IsAuthenticatedOrReadOnly, OwnerOnly)
+    # permission_classes = (IsAuthenticatedOrReadOnly, OwnerOnly)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
     pagination_class = LimitPageNumberPaginator
+
+    def get_permissions(self):
+        if self.action in ('list', 'retrieve', 'get_link'):
+            return (AllowAny(),)
+        return (IsAuthenticated(), OwnerOnly())
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
@@ -217,7 +221,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             settings.ALLOWED_HOSTS[0],
             short_url.encode_url(int(pk))
         )
-        return Response({'short-link': url})
+        return Response({'short-link': url}, status=status.HTTP_200_OK)
 
     @action(detail=True, permission_classes=(IsAuthenticated,))
     def shopping_cart(self, request, pk):
