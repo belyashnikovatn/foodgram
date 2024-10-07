@@ -163,10 +163,15 @@ class RecipeViewSet(viewsets.ModelViewSet):
     скачать список покупок.
     """
     queryset = Recipe.objects.all()
-    permission_classes = (IsAuthenticatedOrReadOnly, OwnerOnly)
+    # permission_classes = (IsAuthenticatedOrReadOnly, OwnerOnly)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
     pagination_class = LimitPageNumberPaginator
+
+    def get_permissions(self):
+        if self.action in ('list', 'retrieve'):
+            return (AllowAny,)
+        return (IsAuthenticated, OwnerOnly)
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
