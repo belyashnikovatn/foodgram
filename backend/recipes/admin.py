@@ -62,7 +62,7 @@ class RecipeAdmin(admin.ModelAdmin):
         TagInline,
         IngredientInline,
     ]
-    list_display = ('name', 'author', 'favorites_count')
+    list_display = ('name', 'author', 'favorites_count', 'pub_date')
     search_fields = ('name',)
     list_filter = ('name', 'author', 'tags')
     exclude = ('ingredients',)
