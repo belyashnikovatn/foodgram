@@ -169,9 +169,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
     pagination_class = LimitPageNumberPaginator
 
     def get_permissions(self):
-        if self.action in ('list', 'retrieve'):
-            return (AllowAny,)
-        return (IsAuthenticated, OwnerOnly)
+        if self.action in ('list', 'retrieve', 'get_link'):
+            return (AllowAny(),)
+        return (IsAuthenticated(), OwnerOnly())
 
     def get_serializer_class(self):
         if self.action in ('list', 'retrieve'):
@@ -222,7 +222,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
             settings.ALLOWED_HOSTS[0],
             short_url.encode_url(int(pk))
         )
-        return Response({'short-link': url})
+        return Response({'short-link': url}, status=status.HTTP_200_OK)
 
     @action(detail=True, permission_classes=(IsAuthenticated,))
     def shopping_cart(self, request, pk):
