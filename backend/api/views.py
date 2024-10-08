@@ -267,7 +267,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if user.is_anonymous:
             return Response({'message': 'анониму анонимный список'})
         recipe_ingredients = RecipeIngredient.objects.filter(
-            recipe_id__in=user.shops.values('id'))
+            recipe_id__in=user.shops.values('recipe_id'))
         ingredients = {}
         for recipe_ingredient in recipe_ingredients:
             ingredients.setdefault(
