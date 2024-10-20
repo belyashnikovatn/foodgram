@@ -43,9 +43,9 @@ const About = ({ updateOrders, orders }) => {
             <p className={styles.textItem}>
               API - <a href="https://yummyinyourtummy.ru/api/" className={styles.textLink}>на DRF</a>
             </p>
-            <p className={styles.textItem}>
+            {/* <p className={styles.textItem}>
               Спецификация API - <a href="https://yummyinyourtummy.ru/api/docs/" className={styles.textLink}>на ReDoc</a>
-            </p>
+            </p> */}
             <p className={styles.textItem}>
               Автор проекта: <a href="https://github.com/belyashnikovatn" className={styles.textLink}>Таня Беляшникова</a>
             </p>
