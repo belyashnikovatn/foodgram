@@ -38,10 +38,16 @@ const About = ({ updateOrders, orders }) => {
           </h2>
           <div className={styles.text}>
             <p className={styles.textItem}>
-              Код проекта находится тут - <a href="#" className={styles.textLink}>Github</a>
+              Код проекта находится тут - <a href="https://github.com/belyashnikovatn/foodgram" className={styles.textLink}>Github</a>
             </p>
             <p className={styles.textItem}>
-              Автор проекта: <a href="#" className={styles.textLink}>Имя Автора</a>
+              API - <a href="https://yummyinyourtummy.ru/api/" className={styles.textLink}>на DRF</a>
+            </p>
+            <p className={styles.textItem}>
+              Спецификация API - <a href="https://yummyinyourtummy.ru/api/docs/" className={styles.textLink}>на ReDoc</a>
+            </p>
+            <p className={styles.textItem}>
+              Автор проекта: <a href="https://github.com/belyashnikovatn" className={styles.textLink}>Таня Беляшникова</a>
             </p>
           </div>
         </aside>
