@@ -4,6 +4,7 @@ volumes:
   pg:
   static:
   media:
+  docs:
 
 services:
   db:
@@ -20,6 +21,7 @@ services:
     volumes:
       - static:/backend_static
       - media:/media
+      - docs:/docs
     depends_on:
       - db
 
@@ -42,7 +44,7 @@ services:
     volumes:
       - static:/staticfiles
       - media:/media
-      - ../docs/:/usr/share/nginx/html/api/docs/
+      - docs:/usr/share/nginx/html/api/docs/
 
     depends_on:
       - backend
