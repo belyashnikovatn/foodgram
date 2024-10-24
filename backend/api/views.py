@@ -40,7 +40,7 @@ User = get_user_model()
 def redirect_view(request, s):
     """Redirect для короткой ссылки"""
     pk = short_url.decode_url(s)
-    return redirect(f'/api/recipes/{pk}')
+    return redirect(f'/recipes/{pk}/')
 
 
 class UserViewSet(UVS):
@@ -217,7 +217,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(detail=True, permission_classes=(AllowAny,), url_path='get-link')
     def get_link(self, request, pk):
         """Получить короткую ссылку на рецепт."""
-        url = 'https://{}/s/{}'.format(
+        url = 'http://{}/s/{}/'.format(
             settings.ALLOWED_HOSTS[0],
             short_url.encode_url(int(pk))
         )
