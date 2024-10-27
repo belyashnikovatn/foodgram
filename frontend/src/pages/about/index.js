@@ -18,11 +18,14 @@ const About = ({ updateOrders, orders }) => {
           <h2 className={styles.subtitle}>Что это за сайт?</h2>
           <div className={styles.text}>
             <p className={styles.textItem}>
-              Представляю вам проект, созданный во время обучения в Яндекс Практикуме. Этот проект — часть учебного курса, но он создан полностью самостоятельно.
+              Представляю вам дипломный проект, созданный по итогам обучения в Яндекс Практикуме.
             </p>
             <p className={styles.textItem}>
-              Цель этого сайта — дать возможность пользователям создавать и хранить рецепты на онлайн-платформе. Кроме того, можно скачать список продуктов, необходимых для
-              приготовления блюда, просмотреть рецепты друзей и добавить любимые рецепты в список избранных.
+              Цель этого сайта — дать возможность пользователям создавать и хранить рецепты на онлайн-платформе. 
+              Понравился рецепт? Добавьте в избранное или подпишитесь на пользователя, чтобы не пропустить 
+              другие его рецепты. Ваши подписки и избранные рецепты доступны в личном кабинете. Там же вы сможете 
+              сменить аватарку и скачать список продуктов, необходимых для приготовления блюда. Для поиска рецептов 
+              предусмотрены теги, а для рецепта предусмотрена короткая ссылка. 
             </p>
             <p className={styles.textItem}>
               Чтобы использовать все возможности сайта — нужна регистрация. Проверка адреса электронной почты не осуществляется, вы можете ввести любой email. 
@@ -38,16 +41,16 @@ const About = ({ updateOrders, orders }) => {
           </h2>
           <div className={styles.text}>
             <p className={styles.textItem}>
-              Код проекта находится тут - <a href="https://github.com/belyashnikovatn/foodgram" className={styles.textLink}>Github</a>
+              Код проекта на <a href="https://github.com/belyashnikovatn/foodgram" className={styles.textLink}>Github</a>
             </p>
             <p className={styles.textItem}>
-              API - <a href="https://yummyinyourtummy.ru/api/" className={styles.textLink}>на DRF</a>
+              API на <a href="https://yummyinyourtummy.ru/api/" className={styles.textLink}>DRF</a>
             </p>
             <p className={styles.textItem}>
-              Спецификация API - <a href="https://yummyinyourtummy.ru/api/docs/" className={styles.textLink}>на ReDoc</a>
+              Спецификация API на <a href="https://yummyinyourtummy.ru/api/docs/" className={styles.textLink}>ReDoc</a>
             </p>
             <p className={styles.textItem}>
-              Автор проекта: <a href="https://github.com/belyashnikovatn" className={styles.textLink}>Таня Беляшникова</a>
+              Бэкенд разработала <a href="https://github.com/belyashnikovatn" className={styles.textLink}>Таня Беляшникова</a>
             </p>
           </div>
         </aside>
