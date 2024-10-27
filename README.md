@@ -1,11 +1,7 @@
 ![бейджик об удачно завершенном workflow](https://github.com/belyashnikovatn/foodgram/actions/workflows/main.yml/badge.svg)
 
 # Проект 
-Цель проекта — закрепить теорию курса по модулям: 
-- API: интерфейс взаимодействия программ
-- Управление проектом на удалённом сервере
-
-Объект проекта: [«Фудграм»](https://yummyinmytommy.zapto.org/recipes) — сайт, на котором пользователи могут публиковать свои рецепты, добавлять чужие рецепты в избранное и подписываться на публикации других авторов. Зарегистрированным пользователям доступен сервис «Список покупок». Он позволит создавать список продуктов, которые нужно купить для приготовления выбранных блюд.
+[«Фудграм»](https://yummyinyourtummy.ru/recipes) — сайт, на котором пользователи могут публиковать свои рецепты, добавлять чужие рецепты в избранное и подписываться на публикации других авторов. Полный список возможностей можно найти [здесь](https://yummyinyourtummy.ru/about). Техническое задание — [спецификация API](https://yummyinyourtummy.ru/api/docs/).
 
 ## Содержание
 - [Технологии](#технологии)
@@ -16,7 +12,8 @@
 - [Авторство](#авторство)
 
 ## Технологии:
-Python + Django REST Framework + TokenAuthentication + JS + Docker + GitHub Actions  
+Python + Django REST Framework + TokenAuthentication + Nginx + Docker + GitHub Actions  
+
 Подключение БД зависит от флага DEBUG:
 - True (тестовый режим) — SQLite
 - False (продакшн) — PostgreSQL
@@ -48,7 +45,7 @@ Python + Django REST Framework + TokenAuthentication + JS + Docker + GitHub Acti
 - docker compose up -d --build
 </details>
 
-<br/>
+<br/>  
 Переменные окружения заложены в .env, используется библиотека load_dotenv. 
 <details>
  <summary>Список переменных:</summary>
@@ -105,7 +102,11 @@ password=password
 
 
 ### Уровень данных 
-Для определения моделей и связей между ними была создана диаграмма "сущность-связь". Для меня это всегда самая важная часть, потому что является основой структуры данных и взаимодействия.  
+Как говаривал Роб Пайк:
+
+> Data structures, not algorithms, are central to programming.  
+
+Поэтому сначала данные, а потом всё остальное. Для определения моделей и связей между ними создана диаграмма "сущность-связь" (ERD).   
 <details>
 <summary>Диаграмма</summary>
 
@@ -113,8 +114,6 @@ password=password
  </details>  
 
 ### Уровень представления
-
-Для этого я собрала все ручки в один файл, осортировала по имени, и получилась такая картинка:
 
 <details>
 <summary>Список функций</summary>
@@ -124,21 +123,22 @@ password=password
 
 <br>
 
+
 Логика выбора типа вьюсета:  
+
 - если действий всего два (просмот списка и единицы), то выбираем ReadOnlyModelViewSet
 - если все CRUD-операции, то ModelViewSet
 - если действий больше, то это дополнительные action 
-- если action похожи, но имеют вилку, то это mapping
+- если action похожи, но имеют вилку, то это mapping  
 
 Изначально я разметила вью и функции в коде, чтобы была полная картина, только после этого приступила к реализации.
 
 <details>
 <summary>Разметка вью и функций на примере рецепта</summary>
 
-```
+```python
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
-    # serializer_class = RecipeSerializer
 
     @action(detail=True, permission_classes=(IsAuthenticated,))
     def favorite(self, request, pk):
@@ -164,8 +164,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 ### Уровень сериализации
-В ходе переделывания функции подписки по третьему разу, я выяснила и закрепила для себя следующий подход к выбору типа сериализатора: если на входе сериализатора экземпляр модели, то есть смысл брать ModelSerializer. Если же на входе связи, а не объекты (например, та же самая подписка пользователя на пользователя), то стоит взять Serializer. Например, для схожих проверок при добавлении/удалении рецепта в избранное/список покупок я использовала один сериализатор UserRecepieSerializer.
-
+В ходе проекта я выяснила и закрепила для себя следующий подход к выбору типа сериализатора: если на входе сериализатора экземпляр модели, то есть смысл брать ModelSerializer. Если же на входе связи, а не объекты (например, та же самая подписка пользователя на пользователя), то стоит взять Serializer. Например, для схожих проверок при добавлении/удалении рецепта в избранное/список покупок я использовала один сериализатор UserRecepieSerializer.
 
 
 
@@ -184,11 +183,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
 ## Развёртывание
 ### Настройка контейнеризации
 - Создан Dockerfile для backend, gateway, db 
-- Создан entrypoint, куда заложено: 
+- Создан entrypoint, куда заложены: 
     - миграции данных
     - создание админа
-    - загрузка данных (инргедиенты и теги)
+    - загрузка данных (инргедиенты, теги, пользователи, рецепты)
     - сбор и копирование статики для бэкенда
+    - копирование документации ReDoc
     - запуск приложения
 - Изменены настройки nginx для контейнера foodgram-proxy
 - Изменён settings: media + env + database settings
@@ -197,9 +197,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
 |Имя образа	|Название контейнера|Название volume|
 |:-------------:|:-------------:|:-------------:|
 |postgres:13|foodgram-db|pg|
-|foodgram_backend|foodgram-back|static, media| 
+|foodgram_backend|foodgram-back|static, media, docs| 
 |foodgram_frontend|foodgram-front|static|
-|foodgram_gateway|foodgram-proxy|static, media| 
+|foodgram_gateway|foodgram-proxy|static, media, docs| 
 
 ### Настройка CI/CD
 - Прописан workflow в main.yml:
@@ -214,8 +214,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
 - понимание, как проектировать сложные вьюсеты, так как до этого я использовала ModelViewSet или ReadOnlyModelViewSet без всяких дополнительных action 
 - понимание разделения зон ответственности и задач между слоями views и serializers  
 - я ещё раз откатала схему работы в git: у меня есть ветка main, develop и остальные создавались под каждую задачу. Все изменения в develop только через pull request, уже потом в main (когда пройдены тесты Postman в и PEP8)
-- понимание, что любую задачу можно решить каким-либо путём.  На некоторые задачи у меня уходило по 2-3 дня, казалось неразрешимым, но я читала, спрашивала, читала опять и находила решение.  
 
 
 ## Авторство
-[Беляшникова Таня](https://github.com/belyashnikovatn)
+Фронтенд — команда Яндекс Практикума.  
+Бэкенд — [Беляшникова Таня](https://github.com/belyashnikovatn)
