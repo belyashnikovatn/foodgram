@@ -12,7 +12,8 @@
 - [Авторство](#авторство)
 
 ## Технологии:
-Python + Django REST Framework + TokenAuthentication + Nginx + Docker + GitHub Actions
+Python + Django REST Framework + TokenAuthentication + Nginx + Docker + GitHub Actions  
+
 Подключение БД зависит от флага DEBUG:
 - True (тестовый режим) — SQLite
 - False (продакшн) — PostgreSQL
@@ -21,10 +22,12 @@ Python + Django REST Framework + TokenAuthentication + Nginx + Docker + GitHub A
 ## Запуск проекта 
 <details>
 <summary>Локально</summary>
+ 
 - $ git clone https://github.com/belyashnikovatn/foodgram.git 
 - $ cd frontend
 - $ npm i
 - $ npm run start
+  
 В другом терминале:
 - $ cd backend
 - $ python -m venv venv
@@ -37,6 +40,7 @@ Python + Django REST Framework + TokenAuthentication + Nginx + Docker + GitHub A
 
 <details>
 <summary>Через docker</summary>
+ 
 - $ cd infra
 - docker compose up -d --build
 </details>
@@ -44,7 +48,8 @@ Python + Django REST Framework + TokenAuthentication + Nginx + Docker + GitHub A
 <br/>  
 Переменные окружения заложены в .env, используется библиотека load_dotenv. 
 <details>
-<summary>Список переменных:</summary>
+ <summary>Список переменных:</summary>
+
 Для подключения к СУБД postgres:  
 POSTGRES_DB=exmaple  
 POSTGRES_USER=exmaple  
@@ -52,7 +57,7 @@ POSTGRES_PASSWORD=exmaple
 DB_HOST=exmaple  
 DB_PORT=exmaple  
 
-Для настроек проекта:
+Для настроек проекта:  
 SECRET_KEY=exmaple  
 DEBUG=TrueOrAny  
 ALLOWED_HOSTS=domain,xxx.xxx.xxx.xxx  
@@ -118,7 +123,9 @@ password=password
 
 <br>
 
-Логика выбора типа вьюсета:
+
+Логика выбора типа вьюсета:  
+
 - если действий всего два (просмот списка и единицы), то выбираем ReadOnlyModelViewSet
 - если все CRUD-операции, то ModelViewSet
 - если действий больше, то это дополнительные action 
